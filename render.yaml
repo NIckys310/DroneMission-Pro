@@ -1,16 +1,16 @@
 # =====================================================================
 # Blueprint de Render: DroneMission Pro (frontend + backend en un servicio)
-# con base de datos PostgreSQL gratuita para que las cuentas no se pierdan.
+#
+# Base de datos: Render permite UNA sola PostgreSQL gratuita por cuenta, así
+# que no se crea aquí. Sin DB_HOST se usa H2 interna (se reinicia al dormir).
+# Para guardar las cuentas de forma permanente escribe en el panel los datos
+# de tu PostgreSQL (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD). Las
+# tablas se crean en el esquema "dronemission", así que puede ser una base
+# que ya uses para otra cosa.
 #
 # Las variables ADMIN_* son SECRETAS (sync: false): Render las pide en su
 # panel y NUNCA quedan guardadas en GitHub.
 # =====================================================================
-databases:
-  - name: dronemission-db
-    databaseName: dronemission
-    user: dronemission
-    plan: free
-
 services:
   - type: web
     name: dronemission-pro
@@ -19,18 +19,19 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:
+      # El Dockerfile elige postgres automáticamente si DB_HOST tiene valor
       - key: SPRING_PROFILES_ACTIVE
-        value: postgres
+        value: h2
       - key: DB_HOST
-        fromDatabase: { name: dronemission-db, property: host }
+        sync: false
       - key: DB_PORT
-        fromDatabase: { name: dronemission-db, property: port }
+        sync: false
       - key: DB_NAME
-        fromDatabase: { name: dronemission-db, property: database }
+        sync: false
       - key: DB_USER
-        fromDatabase: { name: dronemission-db, property: user }
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase: { name: dronemission-db, property: password }
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: TZ

@@ -176,7 +176,8 @@ En local, la pantalla de login muestra botones que llenan estos datos automátic
 4. Tu link queda en la parte superior del servicio, por ejemplo `https://dronemission-pro.onrender.com`.
 
 Detalles:
-- Un solo servicio sirve frontend y API (misma URL) y usa una base **PostgreSQL gratuita de Render** (`dronemission-db`), así que las cuentas y los datos se conservan.
+- Un solo servicio sirve frontend y API (misma URL).
+- **Base de datos:** sin configurar nada usa H2 dentro del servidor (los datos vuelven al estado inicial cuando el servicio se duerme; tu cuenta de administrador se recrea sola). Para que las cuentas registradas se guarden para siempre, abre tu PostgreSQL en Render → **Connect** y copia sus datos en las variables `DB_HOST` (Hostname), `DB_PORT` (5432), `DB_NAME` (Database), `DB_USER` (Username) y `DB_PASSWORD` (Password) del servicio. El sistema detecta `DB_HOST` y usa PostgreSQL automáticamente. Las tablas se crean en el esquema `dronemission`, así que puede ser una base que ya uses para otro proyecto (Render solo permite una base gratuita por cuenta).
 - **Crear tu cuenta de administrador:** en Render abre el servicio `dronemission-pro` → **Environment** y escribe `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME` y `ADMIN_PASSWORD` (8+ caracteres con mayúscula, minúscula y número) → **Save, rebuild and deploy**.
 - El plan gratuito "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**. La base de datos gratuita de Render dura 30 días; después se puede recrear o pasar a un plan pago.
 

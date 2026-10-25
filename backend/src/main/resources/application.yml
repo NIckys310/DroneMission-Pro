@@ -98,6 +98,15 @@ spring:
     activate:
       on-profile: postgres
   datasource:
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:dronemission}
+    # currentSchema: las tablas viven en su propio esquema, así se puede
+    # compartir una base de datos existente sin chocar con otras tablas
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:dronemission}?currentSchema=${DB_SCHEMA:dronemission}
     username: ${DB_USER:dronemission}
     password: ${DB_PASSWORD:dronemission}
+  flyway:
+    schemas: ${DB_SCHEMA:dronemission}
+    create-schemas: true
+  jpa:
+    properties:
+      hibernate:
+        default_schema: ${DB_SCHEMA:dronemission}

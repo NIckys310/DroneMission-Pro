@@ -1,7 +1,8 @@
 # =====================================================================
 # Imagen única para la nube: compila el frontend, lo empaqueta dentro del
 # backend y ejecuta todo en un solo servicio (una sola URL, sin CORS).
-# Base de datos: H2 dentro del contenedor (los datos demo se recrean al reiniciar).
+# Base de datos: si se define DB_HOST usa PostgreSQL; si no, H2 dentro del
+# contenedor (se reinicia cuando el servicio gratuito se duerme).
 # =====================================================================
 FROM node:20-alpine AS frontend
 WORKDIR /app/frontend
@@ -27,4 +28,5 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV JAVA_OPTS="-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 -Xmx300m -Xss512k -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
 ENV SPRING_PROFILES_ACTIVE=h2
 EXPOSE 8080
-CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Si hay datos de PostgreSQL (DB_HOST) se usa ese perfil automáticamente
+CMD ["sh", "-c", "if [ -n \"$DB_HOST\" ]; then export SPRING_PROFILES_ACTIVE=postgres; else export SPRING_PROFILES_ACTIVE=h2; fi; echo \"Perfil de base de datos: $SPRING_PROFILES_ACTIVE\"; exec java $JAVA_OPTS -jar app.jar"]
