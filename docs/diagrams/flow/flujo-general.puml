@@ -1,0 +1,32 @@
+@startuml flujo-general
+!include ../_estilo.iuml
+title Diagrama de flujo general del sistema
+start
+:Abrir DroneMission Pro;
+:Login (correo + contraseña);
+if (¿Credenciales válidas y usuario activo?) then (no)
+  :Mostrar error;
+  stop
+endif
+:Generar JWT y cargar permisos del rol;
+:Mostrar inicio según el rol\n(dashboard / mis misiones);
+repeat
+  :Seleccionar módulo del menú\n(solo los permitidos);
+  :Realizar gestión\n(crear, editar, asignar, volar, reportar...);
+  :Validación en el frontend;
+  :Enviar petición a la API REST;
+  if (¿Token válido y permiso del rol?) then (no)
+    :401 / 403;
+  else (sí)
+    if (¿Datos y reglas de negocio válidos?) then (no)
+      :400 / 409 con mensaje claro;
+    else (sí)
+      :Persistir en la base de datos;
+      :Auditoría y notificaciones (Observer);
+      :Mostrar resultado;
+    endif
+  endif
+repeat while (¿Continuar trabajando?) is (sí) not (no)
+:Cerrar sesión;
+stop
+@enduml

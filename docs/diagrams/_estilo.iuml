@@ -1,0 +1,60 @@
+' Estilo común de todos los diagramas de DroneMission Pro
+skinparam dpi 150
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 12
+skinparam shadowing false
+skinparam roundCorner 8
+skinparam ArrowColor #34495e
+skinparam ArrowFontSize 11
+skinparam backgroundColor #ffffff
+skinparam titleFontSize 16
+skinparam titleFontStyle bold
+skinparam class {
+  BackgroundColor #eaf3fb
+  BorderColor #0e5a9c
+  HeaderBackgroundColor #cfe3f5
+  AttributeFontSize 11
+}
+skinparam component {
+  BackgroundColor #fdf3d8
+  BorderColor #8a6d1d
+}
+skinparam node {
+  BackgroundColor #f4f6f8
+  BorderColor #34495e
+}
+skinparam artifact {
+  BackgroundColor #ffffff
+  BorderColor #34495e
+}
+skinparam usecase {
+  BackgroundColor #eaf3fb
+  BorderColor #0e5a9c
+}
+skinparam actor {
+  BackgroundColor #ffffff
+  BorderColor #0b3a63
+}
+skinparam package {
+  BackgroundColor #f8fafc
+  BorderColor #0e5a9c
+}
+skinparam activity {
+  BackgroundColor #eaf3fb
+  BorderColor #0e5a9c
+  DiamondBackgroundColor #fff4dc
+}
+skinparam state {
+  BackgroundColor #eaf3fb
+  BorderColor #0e5a9c
+}
+skinparam sequence {
+  ParticipantBackgroundColor #eaf3fb
+  ParticipantBorderColor #0e5a9c
+  LifeLineBorderColor #7f8c8d
+  ActorBorderColor #0b3a63
+}
+skinparam note {
+  BackgroundColor #fffbe6
+  BorderColor #c9a227
+}

@@ -1,0 +1,57 @@
+@startuml vista-funcional-componentes
+!include ../_estilo.iuml
+title Vista funcional - Diagrama de componentes
+skinparam componentStyle uml2
+top to bottom direction
+
+actor "Usuario\n(5 roles)" as usuario
+
+package "Frontend (React + TypeScript)" as fe {
+  component "<<component>>\nSPA DroneMission" as spa
+  component "<<component>>\nCliente API\n(Axios + JWT)" as apiclient
+}
+
+package "Backend (Spring Boot)" as be {
+  portin "HTTPS /api" as port
+  component "<<component>>\nSeguridad y\nAutenticación (JWT)" as security
+  component "<<component>>\nGestión de misiones\n(planificación, asignación,\nciclo de vida)" as missions
+  component "<<component>>\nFlota y personal\n(drones, pilotos,\nclientes, usuarios)" as fleet
+  component "<<component>>\nSimulador de telemetría\n(drone virtual)" as telemetry
+  component "<<component>>\nMantenimiento" as maintenance
+  component "<<component>>\nIncidentes y\nevidencias" as incidents
+  component "<<component>>\nReportes PDF\ny dashboard" as reports
+  component "<<component>>\nAuditoría y\nnotificaciones" as audit
+  component "<<component>>\nPersistencia\n(Repositorios JPA)" as repos
+}
+
+database "PostgreSQL / H2" as db
+folder "Evidencias\n(uploads/)" as files
+
+usuario --> spa : navegador
+spa --> apiclient
+apiclient --> port : JSON + Bearer JWT
+port --> security
+
+security --> missions
+security --> fleet
+security --> maintenance
+security --> incidents
+security --> reports
+
+missions -( fleet : IDisponibilidad
+maintenance -( fleet : IEstadoDrone
+telemetry -( missions : IMisionesEnVuelo
+reports -( telemetry : ITelemetria
+missions ..> audit : IEventosMision\n(Observer)
+incidents ..> audit
+
+missions --> repos
+fleet --> repos
+telemetry --> repos
+maintenance --> repos
+incidents --> repos
+reports --> repos
+audit --> repos
+repos --> db : JDBC
+incidents --> files
+@enduml

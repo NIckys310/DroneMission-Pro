@@ -1,0 +1,38 @@
+@startuml 02-crear-mision
+!include ../_estilo.iuml
+title Secuencia - Crear misión (CU-006)
+autonumber
+actor Operador
+participant "Frontend\nMissionsPage" as FE
+participant "JwtAuthenticationFilter" as F
+participant "MissionController" as C
+participant "MissionService" as S
+participant "MissionBuilder" as B
+participant "FlightPlanService" as FP
+participant "MissionStrategyResolver" as SR
+participant "MissionRepository" as R
+participant "MissionEventPublisher" as EP
+database "BD" as DB
+
+Operador -> FE : completa el formulario
+FE -> FE : validaciones del formulario
+FE -> F : POST /api/missions (Bearer JWT)
+F -> F : validar token y cargar permisos
+F -> C : @PreAuthorize(MISIONES_GESTIONAR)
+C -> S : create(MissionRequest)
+S -> B : code().name().type().client()...build()
+B -> B : validar horario, fecha y altitud
+B --> S : Mission (BORRADOR)
+S -> FP : generate(mission)
+FP -> SR : forType(tipo)
+SR --> FP : estrategia (p. ej. InspectionStrategy)
+FP -> FP : generateFlightPlan(centro, altitud)
+FP --> S : puntos de ruta
+S -> R : save(mission)
+R -> DB : INSERT misiones, puntos_ruta
+S -> EP : publish(CREADA)
+EP -> EP : AuditMissionListener / NotificationMissionListener
+S --> C : MissionResponse
+C --> FE : 201 Created
+FE --> Operador : abre el detalle de la misión
+@enduml

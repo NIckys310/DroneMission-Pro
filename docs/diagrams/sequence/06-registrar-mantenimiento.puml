@@ -1,0 +1,36 @@
+@startuml 06-registrar-mantenimiento
+!include ../_estilo.iuml
+title Secuencia - Registrar mantenimiento (CU-014)
+autonumber
+actor "Técnico" as Tec
+participant "Frontend\nMaintenancePage" as FE
+participant "MaintenanceController" as C
+participant "MaintenanceService" as S
+participant "Drone" as D
+participant "MaintenanceRepository" as R
+participant "AuditService" as A
+database "BD" as DB
+
+Tec -> FE : registrar mantenimiento (iniciar ahora)
+FE -> C : POST /api/maintenance
+C -> S : create(request)
+S -> S : técnico responsable = usuario actual
+S -> R : save(PROGRAMADO)
+R -> DB : INSERT mantenimientos
+S -> S : start(id)
+alt drone EN_MISION
+  S --> FE : 400 "El drone está en una misión"
+else
+  S -> D : status = EN_MANTENIMIENTO
+  S -> A : log(INICIAR)
+  S --> FE : 201 (EN_PROCESO)
+end
+... reparación ...
+Tec -> FE : "Completar" (costo final, próxima fecha)
+FE -> C : POST /api/maintenance/{id}/complete
+C -> S : complete(id, datos)
+S -> D : status = DISPONIBLE, batería 100 %,\núltimo/próximo mantenimiento
+S -> A : log(COMPLETAR)
+S -> DB : UPDATE mantenimientos, drones
+S --> FE : 200 COMPLETADO
+@enduml

@@ -1,0 +1,46 @@
+@startuml 03-asignar-recursos
+!include ../_estilo.iuml
+title Secuencia - Asignar drone y piloto (CU-008)
+autonumber
+actor Operador
+participant "Frontend\nAssignDialog" as FE
+participant "MissionController" as C
+participant "AssignmentService" as S
+participant "MissionStrategyResolver" as SR
+participant "MissionAssignment\nRepository" as AR
+participant "MissionEventPublisher" as EP
+database "BD" as DB
+
+Operador -> FE : abrir "Asignar recursos"
+FE -> C : GET /api/missions/{id}/assignment-options
+C -> S : options(id)
+S --> FE : drones y pilotos (elegible / motivo)
+Operador -> FE : elige drone y piloto
+FE -> C : POST /api/missions/{id}/assign
+C -> S : assign(id, droneId, pilotId)
+S -> S : estado = PENDIENTE o PROGRAMADA
+S -> SR : forType(tipo de misión)
+SR --> S : batería mínima y tipos compatibles
+group Validaciones del drone
+  S -> S : activo, no EN_MANTENIMIENTO, no FUERA_DE_SERVICIO
+  S -> S : tipo compatible y batería suficiente
+  S -> AR : droneHasOverlap(fecha, horario)
+end
+group Validaciones del piloto
+  S -> S : licencia vigente (hoy y en la fecha)
+  S -> S : no NO_DISPONIBLE
+  S -> AR : pilotHasOverlap(fecha, horario)
+end
+alt alguna regla falla
+  S --> C : BusinessRuleException("El drone DRN-004 está en mantenimiento")
+  C --> FE : 400 + mensaje claro
+else todo válido
+  S -> AR : desactivar asignación anterior / save(nueva)
+  AR -> DB : INSERT asignaciones_mision
+  S -> S : mission.changeStatus(PROGRAMADA)
+  S -> EP : publish(ASIGNADA)
+  EP -> EP : auditoría + notificación al piloto y al cliente
+  S --> C : MissionResponse
+  C --> FE : 200 OK (PROGRAMADA)
+end
+@enduml

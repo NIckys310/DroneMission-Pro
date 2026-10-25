@@ -1,0 +1,19 @@
+@startuml arquitectura-capas
+!include ../_estilo.iuml
+title Arquitectura en capas - DroneMission Pro
+
+rectangle "Capa de presentación\nReact + TypeScript + MUI (Vite)\nPáginas · Componentes · AuthContext · Cliente API" as pres #eaf3fb
+rectangle "API REST (JSON sobre HTTP)\nSpring Web · Swagger/OpenAPI · CORS" as api #fdf3d8
+rectangle "Seguridad\nSpring Security · JWT · BCrypt · @PreAuthorize" as sec #fde8e8
+rectangle "Capa de controladores\n*Controller (sin lógica de negocio) · DTOs · Bean Validation" as ctrl #f4f6f8
+rectangle "Capa de servicios (lógica de negocio)\n*Service · Máquina de estados · Builder · Strategy · Observer · Factory" as svc #e8f5e9
+rectangle "Capa de persistencia\nSpring Data JPA · *Repository · Entidades · Mappers" as repo #f4f6f8
+database "Base de datos relacional\nPostgreSQL (producción) / H2 (desarrollo)\nMigraciones Flyway" as db
+
+pres -down-> api : HTTPS + Bearer JWT
+api -down-> sec
+sec -down-> ctrl
+ctrl -down-> svc
+svc -down-> repo
+repo -down-> db : JDBC
+@enduml

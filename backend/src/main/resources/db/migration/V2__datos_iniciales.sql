@@ -127,8 +127,8 @@ INSERT INTO mantenimientos (id, drone_id, tecnico_id, tipo, fecha, descripcion, 
 -- Misiones
 -- ---------------------------------------------------------------------
 INSERT INTO misiones (id, codigo, nombre, descripcion, tipo, cliente_id, ubicacion, latitud, longitud, altitud_objetivo_m, fecha_programada, hora_inicio, hora_fin_estimada, prioridad, estado, objetivo, observaciones, creado_por, inicio_real, fin_real) VALUES
- (1, 'MSN-0001', 'Inspección torre de transmisión T-45', 'Revisión de aisladores y herrajes de la torre T-45.', 'INSPECCION', 2, 'Línea Yumbo - Cali, torre T-45', 3.585200, -76.495100, 60, CURRENT_DATE - INTERVAL '7' DAY, '08:00', '09:30', 'ALTA', 'FINALIZADA', 'Detectar puntos calientes y daños en aisladores.', 'Vuelo sin novedades mayores.', 2, CURRENT_TIMESTAMP - INTERVAL '7' DAY, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '25' MINUTE),
- (2, 'MSN-0002', 'Fumigación lote 12 de caña',           'Aplicación de fertilizante foliar en el lote 12.',   'AGRICULTURA', 1, 'Hacienda La Esperanza, lote 12', 3.539400, -76.303200, 15, CURRENT_DATE - INTERVAL '3' DAY, '06:30', '08:00', 'MEDIA', 'FINALIZADA', 'Cubrir 8 hectáreas con aplicación uniforme.', NULL, 2, CURRENT_TIMESTAMP - INTERVAL '3' DAY, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '18' MINUTE),
+ (1, 'MSN-0001', 'Inspección torre de transmisión T-45', 'Revisión de aisladores y herrajes de la torre T-45.', 'INSPECCION', 2, 'Línea Yumbo - Cali, torre T-45', 3.585200, -76.495100, 60, CURRENT_DATE - INTERVAL '7' DAY, '08:00', '09:30', 'ALTA', 'FINALIZADA', 'Detectar puntos calientes y daños en aisladores.', 'Vuelo sin novedades mayores.', 2, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE), (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '25' MINUTE),
+ (2, 'MSN-0002', 'Fumigación lote 12 de caña',           'Aplicación de fertilizante foliar en el lote 12.',   'AGRICULTURA', 1, 'Hacienda La Esperanza, lote 12', 3.539400, -76.303200, 15, CURRENT_DATE - INTERVAL '3' DAY, '06:30', '08:00', 'MEDIA', 'FINALIZADA', 'Cubrir 8 hectáreas con aplicación uniforme.', NULL, 2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE), (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '18' MINUTE),
  (3, 'MSN-0003', 'Levantamiento topográfico Los Pinos',  'Ortofoto y modelo digital del terreno para la urbanización Los Pinos.', 'TOPOGRAFIA', 3, 'Urbanización Los Pinos, Jamundí', 3.262100, -76.539800, 80, CURRENT_DATE, '09:00', '11:00', 'ALTA', 'PROGRAMADA', 'Generar ortofoto con precisión de 3 cm/píxel.', NULL, 2, NULL, NULL),
  (4, 'MSN-0004', 'Vigilancia perimetral planta Acopi',   'Recorrido perimetral de seguridad de la subestación.', 'VIGILANCIA', 2, 'Subestación Acopi, Yumbo', 3.551300, -76.487600, 50, CURRENT_DATE + INTERVAL '2' DAY, '19:00', '20:30', 'MEDIA', 'PROGRAMADA', 'Detectar intrusiones en el perímetro.', NULL, 2, NULL, NULL),
  (5, 'MSN-0005', 'Monitoreo cultivo de café',            'Seguimiento del estado vegetativo del cultivo.',     'MONITOREO', 1, 'Finca El Mirador, El Cerrito', 3.685400, -76.312500, 40, CURRENT_DATE + INTERVAL '4' DAY, '07:00', '08:30', 'BAJA', 'PENDIENTE', 'Identificar zonas con estrés hídrico.', NULL, 2, NULL, NULL),
@@ -146,41 +146,41 @@ INSERT INTO asignaciones_mision (mision_id, drone_id, piloto_id, asignado_por, f
 
 -- Telemetría resumida de las misiones finalizadas (datos simulados)
 INSERT INTO telemetria (mision_id, registrado_en, latitud, longitud, altitud_m, velocidad_kmh, bateria, distancia_m, temperatura_c, tiempo_vuelo_s, punto_ruta_actual, simulado) VALUES
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '1' MINUTE,  3.585200, -76.495100, 20.00,  8.00, 94,    0.00, 24.10,   60, 1, TRUE),
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '5' MINUTE,  3.585900, -76.494600, 60.00, 22.50, 86,  310.40, 24.60,  300, 3, TRUE),
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '10' MINUTE, 3.585600, -76.493800, 60.00, 18.20, 76,  690.80, 25.20,  600, 5, TRUE),
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '15' MINUTE, 3.584600, -76.494300, 60.00, 21.00, 66, 1080.10, 25.80,  900, 7, TRUE),
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '20' MINUTE, 3.584800, -76.495600, 55.00, 19.60, 57, 1460.30, 26.10, 1200, 9, TRUE),
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '25' MINUTE, 3.585200, -76.495100,  0.00,  0.00, 49, 1620.00, 25.40, 1500, 10, TRUE),
- (2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '1' MINUTE,  3.539400, -76.303200,  8.00,  6.00, 87,    0.00, 21.30,   60, 1, TRUE),
- (2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '6' MINUTE,  3.539900, -76.302400, 15.00, 18.00, 64,  520.00, 22.00,  360, 4, TRUE),
- (2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '12' MINUTE, 3.540500, -76.301700, 15.00, 18.00, 38, 1240.00, 22.90,  720, 8, TRUE),
- (2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '18' MINUTE, 3.539400, -76.303200,  0.00,  0.00, 19, 1810.00, 23.10, 1080, 12, TRUE);
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '1' MINUTE,  3.585200, -76.495100, 20.00,  8.00, 94,    0.00, 24.10,   60, 1, TRUE),
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '5' MINUTE,  3.585900, -76.494600, 60.00, 22.50, 86,  310.40, 24.60,  300, 3, TRUE),
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '10' MINUTE, 3.585600, -76.493800, 60.00, 18.20, 76,  690.80, 25.20,  600, 5, TRUE),
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '15' MINUTE, 3.584600, -76.494300, 60.00, 21.00, 66, 1080.10, 25.80,  900, 7, TRUE),
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '20' MINUTE, 3.584800, -76.495600, 55.00, 19.60, 57, 1460.30, 26.10, 1200, 9, TRUE),
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '25' MINUTE, 3.585200, -76.495100,  0.00,  0.00, 49, 1620.00, 25.40, 1500, 10, TRUE),
+ (2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '1' MINUTE,  3.539400, -76.303200,  8.00,  6.00, 87,    0.00, 21.30,   60, 1, TRUE),
+ (2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '6' MINUTE,  3.539900, -76.302400, 15.00, 18.00, 64,  520.00, 22.00,  360, 4, TRUE),
+ (2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '12' MINUTE, 3.540500, -76.301700, 15.00, 18.00, 38, 1240.00, 22.90,  720, 8, TRUE),
+ (2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '18' MINUTE, 3.539400, -76.303200,  0.00,  0.00, 19, 1810.00, 23.10, 1080, 12, TRUE);
 
 -- ---------------------------------------------------------------------
 -- Evidencias
 -- ---------------------------------------------------------------------
 INSERT INTO evidencias (mision_id, tipo, nombre, url, descripcion, visible_cliente, subido_por, fecha) VALUES
- (1, 'FOTOGRAFIA',  'Aislador fase B',             '/demo/evidencias/torre-t45.svg',  'Punto caliente leve en el aislador de la fase B.', TRUE,  3, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '12' MINUTE),
- (1, 'DOCUMENTO',   'Informe termográfico T-45',   '/demo/evidencias/informe-t45.svg', 'Resumen de temperaturas registradas.',             TRUE,  3, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '40' MINUTE),
- (2, 'FOTOGRAFIA',  'Cobertura lote 12',           '/demo/evidencias/lote-12.svg',    'Vista general del lote tras la aplicación.',       TRUE,  6, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '15' MINUTE),
- (2, 'OBSERVACION', 'Viento lateral',              '-',                               'Ráfagas de 18 km/h en el costado norte; se redujo la velocidad.', FALSE, 6, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '7' MINUTE);
+ (1, 'FOTOGRAFIA',  'Aislador fase B',             '/demo/evidencias/torre-t45.svg',  'Punto caliente leve en el aislador de la fase B.', TRUE,  3, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '12' MINUTE),
+ (1, 'DOCUMENTO',   'Informe termográfico T-45',   '/demo/evidencias/informe-t45.svg', 'Resumen de temperaturas registradas.',             TRUE,  3, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '40' MINUTE),
+ (2, 'FOTOGRAFIA',  'Cobertura lote 12',           '/demo/evidencias/lote-12.svg',    'Vista general del lote tras la aplicación.',       TRUE,  6, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '15' MINUTE),
+ (2, 'OBSERVACION', 'Viento lateral',              '-',                               'Ráfagas de 18 km/h en el costado norte; se redujo la velocidad.', FALSE, 6, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '7' MINUTE);
 
 -- ---------------------------------------------------------------------
 -- Incidentes
 -- ---------------------------------------------------------------------
 INSERT INTO incidentes (mision_id, fecha, tipo, severidad, descripcion, registrado_por, estado, resolucion) VALUES
- (1, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '9' MINUTE,  'OBSTACULO',     'MEDIA', 'Ave rapaz cerca de la torre; se mantuvo distancia de seguridad.', 3,    'RESUELTO', 'Se esperó 2 minutos y se continuó la inspección.'),
- (2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '7' MINUTE,  'CLIMA',         'BAJA',  'Ráfagas de viento lateral de 18 km/h.',                           6,    'RESUELTO', 'Se redujo la velocidad de aplicación.'),
- (2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '17' MINUTE, 'BATERIA_BAJA',  'ALTA',  'Batería del drone por debajo del 20 % (alerta automática del sistema).', NULL, 'RESUELTO', 'El piloto finalizó la misión y aterrizó en la base.'),
+ (1, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '9' MINUTE,  'OBSTACULO',     'MEDIA', 'Ave rapaz cerca de la torre; se mantuvo distancia de seguridad.', 3,    'RESUELTO', 'Se esperó 2 minutos y se continuó la inspección.'),
+ (2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '7' MINUTE,  'CLIMA',         'BAJA',  'Ráfagas de viento lateral de 18 km/h.',                           6,    'RESUELTO', 'Se redujo la velocidad de aplicación.'),
+ (2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '17' MINUTE, 'BATERIA_BAJA',  'ALTA',  'Batería del drone por debajo del 20 % (alerta automática del sistema).', NULL, 'RESUELTO', 'El piloto finalizó la misión y aterrizó en la base.'),
  (7, CURRENT_TIMESTAMP - INTERVAL '2' DAY,                        'ERROR_TECNICO', 'ALTA',  'Falla en el gimbal de la cámara durante la prueba previa al vuelo.', 3,  'ABIERTO',  NULL);
 
 -- ---------------------------------------------------------------------
 -- Reportes históricos
 -- ---------------------------------------------------------------------
 INSERT INTO reportes (tipo, titulo, mision_id, generado_por, generado_en, resumen) VALUES
- ('MISION', 'Reporte de misión MSN-0001', 1, 2, CURRENT_TIMESTAMP - INTERVAL '7' DAY + INTERVAL '30' MINUTE, 'Misión finalizada en 25 min. Distancia 1620 m. Batería consumida 45 %. 1 incidente(s), 2 evidencia(s).'),
- ('MISION', 'Reporte de misión MSN-0002', 2, 2, CURRENT_TIMESTAMP - INTERVAL '3' DAY + INTERVAL '20' MINUTE, 'Misión finalizada en 18 min. Distancia 1810 m. Batería consumida 68 %. 2 incidente(s), 2 evidencia(s).');
+ ('MISION', 'Reporte de misión MSN-0001', 1, 2, (CURRENT_DATE - INTERVAL '7' DAY + INTERVAL '485' MINUTE) + INTERVAL '30' MINUTE, 'Misión finalizada en 25 min. Distancia 1620 m. Batería consumida 45 %. 1 incidente(s), 2 evidencia(s).'),
+ ('MISION', 'Reporte de misión MSN-0002', 2, 2, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE) + INTERVAL '20' MINUTE, 'Misión finalizada en 18 min. Distancia 1810 m. Batería consumida 68 %. 2 incidente(s), 2 evidencia(s).');
 
 -- ---------------------------------------------------------------------
 -- Auditoría y notificaciones de ejemplo
@@ -194,7 +194,7 @@ INSERT INTO auditoria (usuario_id, correo_usuario, accion, entidad, entidad_id, 
 INSERT INTO notificaciones (usuario_id, titulo, mensaje, mision_id, leida, fecha) VALUES
  (3, 'Nueva misión asignada', 'Se te asignó la misión MSN-0003 (Levantamiento topográfico Los Pinos) para hoy.', 3, FALSE, CURRENT_TIMESTAMP - INTERVAL '1' DAY),
  (6, 'Nueva misión asignada', 'Se te asignó la misión MSN-0004 (Vigilancia perimetral planta Acopi).', 4, FALSE, CURRENT_TIMESTAMP - INTERVAL '1' DAY),
- (5, 'Misión finalizada',     'La misión MSN-0002 finalizó. Ya puedes consultar el reporte.', 2, FALSE, CURRENT_TIMESTAMP - INTERVAL '3' DAY);
+ (5, 'Misión finalizada',     'La misión MSN-0002 finalizó. Ya puedes consultar el reporte.', 2, FALSE, (CURRENT_DATE - INTERVAL '3' DAY + INTERVAL '395' MINUTE));
 
 -- ---------------------------------------------------------------------
 -- Reiniciar las secuencias de identidad después de insertar IDs fijos

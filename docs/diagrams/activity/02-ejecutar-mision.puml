@@ -1,0 +1,49 @@
+@startuml 02-ejecutar-mision
+!include ../_estilo.iuml
+title Actividad - Ejecutar una misión (piloto y drone virtual)
+|Piloto|
+start
+:Abrir la misión PROGRAMADA;
+:Completar chequeo prevuelo;
+|Sistema|
+if (¿Licencia vigente, piloto y drone\ndisponibles y batería suficiente?) then (no)
+  :Rechazar con mensaje;
+  stop
+endif
+:PROGRAMADA → EN_PREPARACION;
+:Drone y piloto → EN_MISION;
+:Cargar plan de vuelo en el drone virtual;
+|Piloto|
+:Despegar;
+|Sistema|
+:EN_PREPARACION → EN_VUELO;
+repeat
+  |Drone virtual|
+  :Avanzar al siguiente punto de ruta;
+  :Generar telemetría simulada;
+  if (¿Batería ≤ 20 %?) then (sí)
+    |Sistema|
+    :Registrar incidente BATERIA_BAJA automático;
+  endif
+  |Piloto|
+  if (¿Ocurre un incidente?) then (sí)
+    :Registrar incidente / evidencia;
+    |Sistema|
+    if (¿Severidad CRÍTICA?) then (sí)
+      :Pausar misión automáticamente;
+      :Notificar a operaciones;
+    endif
+  endif
+  |Piloto|
+  if (¿Pausar?) then (sí)
+    :Pausar y luego reanudar;
+  endif
+repeat while (¿Ruta completada?) is (no) not (sí)
+|Piloto|
+:Finalizar misión con observaciones;
+|Sistema|
+:EN_VUELO → FINALIZADA;
+:Sumar horas de vuelo, liberar drone y piloto;
+:Generar reporte de misión;
+stop
+@enduml

@@ -1,0 +1,77 @@
+@startuml casos-de-uso
+!include ../_estilo.iuml
+title Diagrama de casos de uso - DroneMission Pro
+left to right direction
+
+actor Administrador as admin
+actor Operador as op
+actor Piloto as pil
+actor "Técnico" as tec
+actor Cliente as cli
+actor "Drone virtual\n(simulador)" as drone <<sistema>>
+
+rectangle "DroneMission Pro" {
+  usecase "CU-001 Iniciar sesión" as UC1
+  usecase "CU-002 Gestionar usuarios\ny roles" as UC2
+  usecase "CU-003 Gestionar drones" as UC3
+  usecase "CU-004 Gestionar pilotos" as UC4
+  usecase "CU-005 Gestionar clientes" as UC5
+  usecase "CU-006 Crear misión" as UC6
+  usecase "CU-007 Programar misión\n(enviar a planificación)" as UC7
+  usecase "CU-008 Asignar drone\ny piloto" as UC8
+  usecase "CU-009 Preparar e iniciar\nmisión" as UC9
+  usecase "CU-010 Pausar / reanudar\nmisión" as UC10
+  usecase "CU-011 Finalizar misión" as UC11
+  usecase "CU-012 Registrar incidente" as UC12
+  usecase "CU-013 Registrar evidencia" as UC13
+  usecase "CU-014 Gestionar\nmantenimiento" as UC14
+  usecase "CU-015 Consultar reportes" as UC15
+  usecase "CU-016 Consultar dashboard" as UC16
+  usecase "CU-017 Monitorear telemetría" as UC17
+  usecase "CU-018 Cancelar misión" as UC18
+  usecase "Validar disponibilidad\nde recursos" as VAL
+  usecase "Generar plan de vuelo\n(estrategia)" as PLAN
+  usecase "Generar reporte PDF" as PDF
+  usecase "Registrar auditoría" as AUD
+}
+
+admin --> UC2
+admin --> UC3
+admin --> UC4
+admin --> UC5
+admin --> UC16
+admin --> UC15
+op --> UC6
+op --> UC7
+op --> UC8
+op --> UC18
+op --> UC16
+op --> UC15
+pil --> UC9
+pil --> UC10
+pil --> UC11
+pil --> UC12
+pil --> UC13
+pil --> UC17
+tec --> UC14
+tec --> UC16
+cli --> UC15
+cli --> UC17
+drone --> UC17
+
+admin --> UC1
+op --> UC1
+pil --> UC1
+tec --> UC1
+cli --> UC1
+
+UC6 ..> PLAN : <<include>>
+UC8 ..> VAL : <<include>>
+UC9 ..> VAL : <<include>>
+UC11 ..> PDF : <<include>>
+UC15 <.. PDF : <<extend>>
+UC12 <.. UC10 : <<extend>>\n(incidente crítico\npausa la misión)
+UC8 ..> AUD : <<include>>
+UC11 ..> AUD : <<include>>
+UC14 ..> AUD : <<include>>
+@enduml

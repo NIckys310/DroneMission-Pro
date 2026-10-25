@@ -1,0 +1,12 @@
+@startuml estado-drone
+!include ../_estilo.iuml
+title Diagrama de estados - Drone (DroneStatus)
+[*] --> DISPONIBLE : registrar drone\n(DroneFactory)
+DISPONIBLE --> EN_MISION : misión en preparación
+EN_MISION --> DISPONIBLE : misión finalizada\no cancelada
+DISPONIBLE --> EN_MANTENIMIENTO : iniciar mantenimiento
+EN_MANTENIMIENTO --> DISPONIBLE : completar / cancelar\nmantenimiento
+DISPONIBLE --> FUERA_DE_SERVICIO : técnico marca avería\no baja lógica
+FUERA_DE_SERVICIO --> EN_MANTENIMIENTO : iniciar reparación
+FUERA_DE_SERVICIO --> DISPONIBLE : técnico lo habilita
+@enduml

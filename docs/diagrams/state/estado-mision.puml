@@ -1,0 +1,32 @@
+@startuml estado-mision
+!include ../_estilo.iuml
+title Diagrama de estados - Misión (MissionStatus)
+
+[*] --> BORRADOR : crear misión\n[datos válidos]
+BORRADOR --> PENDIENTE : enviar a planificación\n[tiene plan de vuelo]
+PENDIENTE --> PROGRAMADA : asignar drone y piloto\n[drone disponible, batería,\nlicencia vigente, sin cruces]
+PROGRAMADA --> PROGRAMADA : reasignar recursos
+PROGRAMADA --> EN_PREPARACION : chequeo prevuelo (piloto)\n[revalidación OK]
+EN_PREPARACION --> EN_VUELO : despegar (piloto)
+EN_VUELO --> PAUSADA : pausar (piloto)\no incidente CRÍTICO
+PAUSADA --> EN_VUELO : reanudar (piloto)
+EN_VUELO --> FINALIZADA : finalizar (piloto)
+PAUSADA --> FINALIZADA : finalizar (piloto)
+
+BORRADOR --> CANCELADA : cancelar
+PENDIENTE --> CANCELADA : cancelar
+PROGRAMADA --> CANCELADA : cancelar (operador)
+EN_PREPARACION --> CANCELADA : cancelar\n/ libera drone y piloto
+
+BORRADOR --> [*] : eliminar borrador
+FINALIZADA --> [*]
+CANCELADA --> [*]
+
+state EN_VUELO {
+  [*] --> Navegando
+  Navegando --> Navegando : tick del simulador /\nnueva lectura de telemetría
+  Navegando --> RutaCompletada : último punto alcanzado
+}
+note right of FINALIZADA : No puede reabrirse
+note right of CANCELADA : No puede iniciarse
+@enduml

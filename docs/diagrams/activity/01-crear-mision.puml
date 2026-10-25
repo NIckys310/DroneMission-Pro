@@ -1,0 +1,41 @@
+@startuml 01-crear-mision
+!include ../_estilo.iuml
+title Actividad - Crear y programar una misión
+|Operador|
+start
+:Abrir "Nueva misión";
+:Ingresar datos (tipo, cliente, ubicación,\nfecha, horario, altitud, objetivo);
+|Sistema|
+if (¿Datos válidos?\n(campos, horario, fecha, altitud ≤ 120 m)) then (no)
+  :Mostrar errores por campo;
+  |Operador|
+  :Corregir datos;
+  stop
+else (sí)
+  |Sistema|
+  :Construir misión con MissionBuilder;
+  :Generar plan de vuelo según la estrategia del tipo;
+  :Guardar misión en BORRADOR;
+  :Registrar auditoría;
+endif
+|Operador|
+:Enviar a planificación;
+|Sistema|
+:BORRADOR → PENDIENTE;
+|Operador|
+:Abrir "Asignar recursos";
+|Sistema|
+:Calcular drones y pilotos elegibles (con motivo);
+|Operador|
+:Seleccionar drone y piloto;
+|Sistema|
+if (¿Drone disponible, compatible, con batería\ny piloto con licencia vigente y sin cruces?) then (no)
+  :Mostrar el motivo del rechazo;
+  stop
+else (sí)
+  :Guardar asignación;
+  :PENDIENTE → PROGRAMADA;
+  :Notificar al piloto y al cliente;
+endif
+stop
+@enduml

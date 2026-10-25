@@ -62,7 +62,7 @@ public class PdfReportGenerator {
             keyValues(doc, "Lecturas", String.valueOf(t.readings()), "Distancia", Math.round(t.distanceM()) + " m",
                     "Altitud máxima", t.maxAltitudeM() + " m", "Velocidad promedio", t.avgSpeedKmh() + " km/h",
                     "Tiempo de vuelo", (t.flightTimeS() / 60) + " min " + (t.flightTimeS() % 60) + " s",
-                    "Batería", t.startBattery() + " % → " + t.endBattery() + " % (consumo " + t.batteryUsed() + " %)");
+                    "Batería", t.startBattery() + " % a " + t.endBattery() + " % (consumo " + t.batteryUsed() + " %)");
 
             section(doc, "Incidentes (" + r.incidents().size() + ")");
             PdfPTable inc = table(new float[]{2.2f, 2.2f, 1.2f, 5f, 1.6f}, "Fecha", "Tipo", "Severidad", "Descripción", "Estado");

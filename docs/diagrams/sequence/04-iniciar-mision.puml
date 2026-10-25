@@ -1,0 +1,43 @@
+@startuml 04-iniciar-mision
+!include ../_estilo.iuml
+title Secuencia - Preparar e iniciar misión (CU-009)
+autonumber
+actor Piloto
+participant "Frontend\nMissionDetailPage" as FE
+participant "MissionController" as C
+participant "MissionLifecycleService" as L
+participant "MissionAccessService" as AC
+participant "AssignmentService" as AS
+participant "Mission" as M
+participant "TelemetrySimulator\n(drone virtual)" as SIM
+database "BD" as DB
+
+Piloto -> FE : completa la lista de chequeo prevuelo
+FE -> C : POST /api/missions/{id}/prepare
+C -> L : prepare(id)
+L -> AC : checkExecute (¿es el piloto asignado?)
+L -> M : assertCanTransitionTo(EN_PREPARACION)
+L -> AS : validateReadyForFlight(mission)
+AS -> AS : tiene drone y piloto
+AS -> AS : licencia vigente, piloto y drone DISPONIBLES, batería
+alt validación falla
+  AS --> FE : 400 (p. ej. "licencia vencida")
+else ok
+  L -> M : changeStatus(EN_PREPARACION)
+  L -> L : drone y piloto -> EN_MISION
+  L --> FE : 200 (plan de vuelo cargado)
+end
+Piloto -> FE : "Despegar"
+FE -> C : POST /api/missions/{id}/start
+C -> L : start(id)
+L -> M : changeStatus(EN_VUELO); actualStart = ahora
+L -> DB : UPDATE misiones
+L --> FE : 200 EN_VUELO
+loop cada 2 s mientras EN_VUELO
+  SIM -> DB : leer última lectura y plan de vuelo
+  SIM -> SIM : avanzar hacia el siguiente punto\n(estrategia: velocidad y consumo)
+  SIM -> DB : INSERT telemetria (simulado = true)
+  FE -> C : GET /api/missions/{id}/telemetry
+  C --> FE : posición, altitud, batería...
+end
+@enduml

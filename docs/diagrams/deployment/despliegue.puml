@@ -1,0 +1,29 @@
+@startuml despliegue
+!include ../_estilo.iuml
+title Vista de despliegue - Diagrama de despliegue
+
+node "<<device>>\n:Equipo del usuario" as client {
+  node "<<device>>\n:Navegador web" as browser {
+    artifact "<<artifact>>\nSPA React\n(HTML5 + JS)" as spa
+  }
+}
+
+node "<<device>>\n:Servidor de aplicaciones" as appserver {
+  node "<<execution environment>>\nNode.js / Vite o Nginx" as web {
+    artifact "<<artifact>>\nfrontend/dist" as dist
+  }
+  node "<<execution environment>>\nJVM (Java 17+)" as jvm {
+    artifact "<<artifact>>\ndronemission-backend.jar\n(Spring Boot, API REST)" as jar
+  }
+  folder "uploads/\n(evidencias)" as uploads
+}
+
+node "<<device>>\n:Servidor de base de datos" as dbserver {
+  database "<<artifact>>\nPostgreSQL 16\n(o H2 embebida)" as db
+}
+
+browser -- web : HTTP :5173 / :80
+spa ..> jar : HTTPS REST + JWT\n/api (:8080)
+jar -- db : JDBC :5432
+jar -- uploads : sistema de archivos
+@enduml

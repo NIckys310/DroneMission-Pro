@@ -1,0 +1,36 @@
+@startdot
+digraph VistaContexto {
+  // Vista de contexto (diagrama de contexto / DFD nivel 0) de DroneMission Pro.
+  // El sistema es el círculo central; alrededor están las entidades externas
+  // y los flujos de información que intercambian con él.
+  graph [rankdir=LR, splines=true, nodesep=0.7, ranksep=1.3, fontname="DejaVu Sans", label="Vista de contexto - DroneMission Pro", labelloc=t, fontsize=18, pad=0.4, dpi=150];
+  node  [fontname="DejaVu Sans", fontsize=13, shape=box, style="rounded,filled", fillcolor="#ffffff", color="#34495e", penwidth=1.4, width=1.9, height=0.7];
+  edge  [fontname="DejaVu Sans", fontsize=10.5, color="#34495e", arrowsize=0.8];
+
+  sistema [label="DroneMission\nPro", shape=circle, width=2.4, fixedsize=true, fillcolor="#eaf3fb", color="#0e5a9c", fontsize=16, penwidth=2.2];
+
+  admin    [label="Administrador"];
+  operador [label="Operador"];
+  tecnico  [label="Técnico"];
+  piloto   [label="Piloto"];
+  cliente  [label="Cliente"];
+  drone    [label="Drone virtual\n(simulador)", fillcolor="#fff7e0"];
+
+  { rank=same; admin; operador; tecnico; }
+  { rank=same; piloto; cliente; drone; }
+
+  admin    -> sistema [label="Usuarios, roles, drones,\npilotos y clientes"];
+  sistema  -> admin   [label="Dashboard, reportes\ny auditoría"];
+  operador -> sistema [label="Misiones y\nasignaciones"];
+  sistema  -> operador[label="Disponibilidad,\nalertas y reportes"];
+  tecnico  -> sistema [label="Mantenimientos y\nestado técnico"];
+  sistema  -> tecnico [label="Alertas e historial\nde mantenimiento"];
+
+  sistema -> piloto  [label="Misiones asignadas,\nplan de vuelo y telemetría"];
+  piloto  -> sistema [label="Chequeo prevuelo, inicio/pausa/fin,\nincidentes y evidencias"];
+  sistema -> cliente [label="Estado, evidencias\ny reportes PDF"];
+  cliente -> sistema [label="Consultas de\nsus misiones"];
+  sistema -> drone   [label="Plan de vuelo\nprogramado"];
+  drone   -> sistema [label="Telemetría simulada\n(posición, altitud, batería)"];
+}
+@enddot

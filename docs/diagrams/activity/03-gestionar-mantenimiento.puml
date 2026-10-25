@@ -1,0 +1,35 @@
+@startuml 03-gestionar-mantenimiento
+!include ../_estilo.iuml
+title Actividad - Gestionar mantenimiento
+|Técnico|
+start
+:Revisar alertas de mantenimiento;
+:Registrar mantenimiento (drone, tipo,\nfecha, costo, descripción);
+|Sistema|
+:Guardar como PROGRAMADO;
+|Técnico|
+:Iniciar mantenimiento;
+|Sistema|
+if (¿El drone está EN_MISION?) then (sí)
+  :Rechazar: esperar a que termine la misión;
+  stop
+endif
+:PROGRAMADO → EN_PROCESO;
+:Drone → EN_MANTENIMIENTO\n(no se puede asignar);
+|Técnico|
+:Realizar reparación / calibración;
+if (¿Se puede completar?) then (sí)
+  :Completar (costo final, próxima fecha);
+  |Sistema|
+  :EN_PROCESO → COMPLETADO;
+  :Drone → DISPONIBLE, batería 100 %;
+  :Actualizar último y próximo mantenimiento;
+else (no)
+  |Técnico|
+  :Cancelar mantenimiento;
+  |Sistema|
+  :Drone → DISPONIBLE si no hay otro en proceso;
+endif
+:Registrar auditoría;
+stop
+@enduml

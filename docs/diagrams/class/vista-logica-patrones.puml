@@ -1,0 +1,99 @@
+@startuml vista-logica-patrones
+!include ../_estilo.iuml
+title Vista lógica - Patrones de diseño aplicados
+hide empty members
+
+package "Builder" {
+  class MissionBuilder {
+    +code(c): MissionBuilder
+    +name(n): MissionBuilder
+    +type(t): MissionBuilder
+    +client(c): MissionBuilder
+    +location(l, lat, lon): MissionBuilder
+    +schedule(d, inicio, fin): MissionBuilder
+    +build(): Mission
+  }
+  class Mission
+  MissionBuilder ..> Mission : <<create>>
+}
+
+package "Strategy" {
+  interface MissionStrategy {
+    +supportedTypes(): Set<MissionType>
+    +minimumBatteryPercent(): int
+    +compatibleDroneTypes(): Set<DroneType>
+    +cruiseSpeedKmh(): double
+    +batteryDrainPerMinute(): double
+    +generateFlightPlan(centro, altitud): List
+  }
+  abstract class AbstractMissionStrategy {
+    #generatePattern(centro, altitud): List
+  }
+  class InspectionStrategy
+  class AgricultureStrategy
+  class SurveillanceStrategy
+  class MappingStrategy
+  class MissionStrategyResolver {
+    +forType(MissionType): MissionStrategy
+  }
+  MissionStrategy <|.. AbstractMissionStrategy
+  AbstractMissionStrategy <|-- InspectionStrategy
+  AbstractMissionStrategy <|-- AgricultureStrategy
+  AbstractMissionStrategy <|-- SurveillanceStrategy
+  AbstractMissionStrategy <|-- MappingStrategy
+  MissionStrategyResolver o--> "4" MissionStrategy
+}
+
+package "Observer" {
+  class MissionEventPublisher {
+    -listeners: List<MissionEventListener>
+    +publish(MissionEvent): void
+  }
+  interface MissionEventListener {
+    +onMissionEvent(MissionEvent): void
+  }
+  class AuditMissionListener
+  class NotificationMissionListener
+  MissionEventPublisher o--> "*" MissionEventListener
+  MissionEventListener <|.. AuditMissionListener
+  MissionEventListener <|.. NotificationMissionListener
+}
+
+package "Factory" {
+  class DroneFactory {
+    +createDrone(DroneRequest, seq): Drone
+  }
+  class Drone
+  DroneFactory ..> Drone : <<create>>
+}
+
+package "State (máquina de estados)" {
+  enum MissionStatus {
+    BORRADOR
+    PENDIENTE
+    PROGRAMADA
+    EN_PREPARACION
+    EN_VUELO
+    PAUSADA
+    FINALIZADA
+    CANCELADA
+    +canTransitionTo(target): boolean
+  }
+}
+
+package "Singleton (bean de Spring)" {
+  class TelemetrySimulator <<singleton>> {
+    +tick(): void
+  }
+}
+
+class MissionService
+class MissionLifecycleService
+class AssignmentService
+MissionService ..> MissionBuilder : usa
+MissionService ..> MissionEventPublisher : publica
+MissionLifecycleService ..> MissionEventPublisher : publica
+AssignmentService ..> MissionStrategyResolver : batería mínima\ny compatibilidad
+TelemetrySimulator ..> MissionStrategyResolver : velocidad\ny consumo
+Mission ..> MissionStatus
+@enduml

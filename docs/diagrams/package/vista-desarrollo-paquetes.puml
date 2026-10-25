@@ -1,0 +1,56 @@
+@startuml vista-desarrollo-paquetes
+!include ../_estilo.iuml
+title Vista de desarrollo - Diagrama de paquetes (backend com.dronemission)
+
+package "config" as config
+package "common.exception" as common
+package "auth" as auth
+package "users" as users
+package "drones" as drones
+package "pilots" as pilots
+package "clients" as clients
+package "missions" as missions {
+  package "strategy" as strategy
+  package "event" as event
+  package "dto" as mdto
+}
+package "telemetry" as telemetry
+package "incidents" as incidents
+package "evidence" as evidence
+package "maintenance" as maintenance
+package "reports" as reports
+package "dashboard" as dashboard
+package "audit" as audit
+package "notifications" as notifications
+
+config ..> auth
+auth ..> users
+auth ..> pilots
+auth ..> clients
+missions ..> drones
+missions ..> pilots
+missions ..> clients
+missions ..> audit
+telemetry ..> missions
+telemetry ..> incidents
+incidents ..> missions
+incidents ..> notifications
+evidence ..> missions
+maintenance ..> drones
+reports ..> missions
+reports ..> telemetry
+reports ..> incidents
+reports ..> evidence
+reports ..> maintenance
+dashboard ..> missions
+dashboard ..> maintenance
+audit ..> event : implementa\nMissionEventListener
+notifications ..> event : implementa\nMissionEventListener
+users ..> common
+missions ..> common
+
+note bottom of missions
+  Cada paquete sigue la misma estructura en capas:
+  Controller -> Service -> Repository -> Entity (+ dto, Mapper)
+end note
+@enduml

@@ -1,0 +1,34 @@
+@startuml 05-finalizar-mision
+!include ../_estilo.iuml
+title Secuencia - Finalizar misión y generar reporte (CU-011)
+autonumber
+actor Piloto
+participant "Frontend" as FE
+participant "MissionController" as C
+participant "MissionLifecycleService" as L
+participant "TelemetryService" as T
+participant "Drone / Pilot" as RES
+participant "ReportService" as RS
+participant "MissionEventPublisher" as EP
+database "BD" as DB
+
+Piloto -> FE : "Finalizar" + observaciones
+FE -> C : POST /api/missions/{id}/finish
+C -> L : finish(id, observaciones)
+L -> L : checkExecute + changeStatus(FINALIZADA)
+L -> T : summarize(id)
+T -> DB : SELECT telemetria
+T --> L : tiempo de vuelo, distancia, batería final
+L -> RES : drone.addFlightHours(h); batería = final; DISPONIBLE
+L -> RES : piloto.addFlightHours(h); DISPONIBLE
+L -> RS : recordMissionReport(mission)
+RS -> DB : INSERT reportes (resumen)
+L -> EP : publish(FINALIZADA)
+EP -> DB : INSERT auditoria
+EP -> DB : INSERT notificaciones (cliente y operador)
+L --> C : MissionResponse (FINALIZADA)
+C --> FE : 200 OK
+FE -> C : GET /api/reports/missions/{id}/pdf
+C -> RS : missionPdf(id)
+RS --> FE : PDF (OpenPDF)
+@enduml

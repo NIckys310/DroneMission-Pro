@@ -1,0 +1,9 @@
+# Finales de línea correctos en Windows y Linux
+* text=auto
+*.sh text eol=lf
+mvnw text eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.png binary
+*.pdf binary
+*.pptx binary

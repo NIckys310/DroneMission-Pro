@@ -1,0 +1,192 @@
+@startuml vista-logica-clases
+!include ../_estilo.iuml
+title Vista lógica - Diagrama de clases del dominio (paquete com.dronemission)
+hide empty members
+skinparam linetype ortho
+left to right direction
+
+class User {
+  -id: Long
+  -firstName: String
+  -lastName: String
+  -email: String
+  -passwordHash: String
+  -active: boolean
+  -lastLoginAt: LocalDateTime
+  +getFullName(): String
+  +hasRole(RoleName): boolean
+}
+class Role {
+  -id: Long
+  -name: RoleName
+  -description: String
+  +hasPermission(code): boolean
+}
+class Permission {
+  -id: Long
+  -code: String
+  -description: String
+}
+class Client {
+  -id: Long
+  -type: ClientType
+  -name: String
+  -document: String
+  -email: String
+  -phone: String
+  -city: String
+  -active: boolean
+}
+class Pilot {
+  -id: Long
+  -firstName: String
+  -lastName: String
+  -document: String
+  -licenseNumber: String
+  -licenseExpiresOn: LocalDate
+  -flightHours: BigDecimal
+  -status: PilotStatus
+  +hasValidLicenseOn(date): boolean
+  +addFlightHours(h): void
+  +refreshLicenseStatus(today): void
+}
+class PilotCertification {
+  -id: Long
+  -name: String
+  -issuer: String
+  -issuedOn: LocalDate
+  -expiresOn: LocalDate
+}
+class Drone {
+  -id: Long
+  -code: String
+  -name: String
+  -manufacturer: String
+  -model: String
+  -serialNumber: String
+  -type: DroneType
+  -status: DroneStatus
+  -batteryCapacityMah: Integer
+  -batteryLevel: Integer
+  -flightHours: BigDecimal
+  -nextMaintenanceOn: LocalDate
+  +isAssignable(): boolean
+  +hasBatteryAtLeast(p): boolean
+  +addFlightHours(h): void
+}
+class Mission {
+  -id: Long
+  -code: String
+  -name: String
+  -type: MissionType
+  -location: String
+  -latitude: Double
+  -longitude: Double
+  -targetAltitudeM: Integer
+  -scheduledDate: LocalDate
+  -startTime: LocalTime
+  -estimatedEndTime: LocalTime
+  -priority: MissionPriority
+  -status: MissionStatus
+  -objective: String
+  -actualStart: LocalDateTime
+  -actualEnd: LocalDateTime
+  +changeStatus(target): void
+  +getActiveAssignment(): Optional
+  +replaceFlightPlan(list): void
+}
+class MissionAssignment {
+  -id: Long
+  -assignedAt: LocalDateTime
+  -active: boolean
+}
+class Waypoint {
+  -sequence: Integer
+  -latitude: Double
+  -longitude: Double
+  -altitudeM: Integer
+  -action: WaypointAction
+}
+class Telemetry {
+  -id: Long
+  -recordedAt: LocalDateTime
+  -latitude: Double
+  -longitude: Double
+  -altitudeM: Double
+  -speedKmh: Double
+  -battery: Integer
+  -distanceM: Double
+  -temperatureC: Double
+  -flightTimeS: Integer
+  -simulated: boolean
+}
+class Evidence {
+  -id: Long
+  -type: EvidenceType
+  -name: String
+  -url: String
+  -visibleToClient: boolean
+  -date: LocalDateTime
+  +isStoredFile(): boolean
+}
+class Incident {
+  -id: Long
+  -date: LocalDateTime
+  -type: IncidentType
+  -severity: IncidentSeverity
+  -description: String
+  -status: IncidentStatus
+  -resolution: String
+}
+class Maintenance {
+  -id: Long
+  -type: MaintenanceType
+  -date: LocalDate
+  -description: String
+  -cost: BigDecimal
+  -status: MaintenanceStatus
+  -nextDate: LocalDate
+}
+class Report {
+  -id: Long
+  -type: ReportType
+  -title: String
+  -generatedAt: LocalDateTime
+  -summary: String
+}
+class AuditLog {
+  -id: Long
+  -action: String
+  -entity: String
+  -entityId: Long
+  -description: String
+  -date: LocalDateTime
+}
+class Notification {
+  -id: Long
+  -title: String
+  -message: String
+  -read: boolean
+}
+
+User "0..*" --> "1" Role : tiene >
+Role "0..*" o-- "0..*" Permission : agrupa >
+Pilot "0..1" -- "0..1" User : accede como >
+Client "0..1" -- "0..1" User : accede como >
+Pilot "1" *-- "0..*" PilotCertification : posee >
+Client "1" -- "0..*" Mission : contrata >
+User "1" -- "0..*" Mission : crea >
+Mission "1" *-- "0..*" MissionAssignment : historial >
+MissionAssignment "0..*" --> "1" Drone
+MissionAssignment "0..*" --> "1" Pilot
+Mission "1" *-- "2..*" Waypoint : plan de vuelo >
+Mission "1" *-- "0..*" Telemetry : registra >
+Mission "1" *-- "0..*" Evidence : contiene >
+Mission "1" *-- "0..*" Incident : sufre >
+Mission "0..1" -- "0..*" Report : resume <
+Drone "1" -- "0..*" Maintenance : recibe >
+Maintenance "0..*" --> "1" User : técnico >
+Incident "0..*" --> "0..1" User : registrado por >
+AuditLog "0..*" --> "0..1" User
+Notification "0..*" --> "1" User : destinatario >
+@enduml

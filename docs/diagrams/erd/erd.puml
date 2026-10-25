@@ -1,0 +1,190 @@
+@startuml erd
+!include ../_estilo.iuml
+title Diagrama entidad-relación - Base de datos de DroneMission Pro
+hide circle
+skinparam linetype ortho
+left to right direction
+
+entity "roles" as roles {
+  * id : BIGINT <<PK>>
+  --
+  * nombre : VARCHAR(30) <<UQ>>
+  * descripcion : VARCHAR(255)
+}
+entity "permisos" as permisos {
+  * id : BIGINT <<PK>>
+  --
+  * codigo : VARCHAR(50) <<UQ>>
+  * descripcion : VARCHAR(255)
+}
+entity "rol_permisos" as rp {
+  * rol_id : BIGINT <<PK, FK>>
+  * permiso_id : BIGINT <<PK, FK>>
+}
+entity "usuarios" as usuarios {
+  * id : BIGINT <<PK>>
+  --
+  * nombre, apellidos : VARCHAR(80)
+  * correo : VARCHAR(120) <<UQ>>
+  * contrasena_hash : VARCHAR(100)
+  * rol_id : BIGINT <<FK>>
+  * activo : BOOLEAN
+  token_recuperacion, token_expira_en
+  ultimo_acceso, creado_en, actualizado_en
+}
+entity "clientes" as clientes {
+  * id : BIGINT <<PK>>
+  --
+  * tipo : PERSONA|EMPRESA
+  * nombre : VARCHAR(150)
+  * documento : VARCHAR(30) <<UQ>>
+  * correo, telefono, direccion, ciudad
+  * activo : BOOLEAN
+  usuario_id : BIGINT <<FK, UQ>>
+}
+entity "pilotos" as pilotos {
+  * id : BIGINT <<PK>>
+  --
+  * nombre, apellidos
+  * documento <<UQ>>, correo <<UQ>>
+  * numero_licencia : VARCHAR(40) <<UQ>>
+  * vencimiento_licencia : DATE
+  * horas_vuelo : NUMERIC(10,2)
+  * estado : VARCHAR(20) <<CHECK>>
+  usuario_id : BIGINT <<FK, UQ>>
+}
+entity "certificaciones_piloto" as cert {
+  * id : BIGINT <<PK>>
+  --
+  * piloto_id : BIGINT <<FK>>
+  * nombre, entidad_emisora
+  * fecha_emision : DATE
+  fecha_vencimiento : DATE
+}
+entity "drones" as drones {
+  * id : BIGINT <<PK>>
+  --
+  * codigo <<UQ>>, numero_serie <<UQ>>
+  * nombre, fabricante, modelo
+  * tipo, estado : VARCHAR(20) <<CHECK>>
+  * capacidad_bateria_mah : INTEGER
+  * bateria_actual : INTEGER (0-100)
+  * horas_vuelo : NUMERIC(10,2)
+  * velocidad_maxima_kmh, autonomia_minutos
+  * fecha_adquisicion : DATE
+  ultimo_mantenimiento, proximo_mantenimiento
+}
+entity "mantenimientos" as mant {
+  * id : BIGINT <<PK>>
+  --
+  * drone_id : BIGINT <<FK>>
+  * tecnico_id : BIGINT <<FK>>
+  * tipo, estado <<CHECK>>
+  * fecha : DATE
+  * descripcion, costo : NUMERIC(12,2)
+  proxima_fecha, iniciado_en, completado_en
+}
+entity "misiones" as misiones {
+  * id : BIGINT <<PK>>
+  --
+  * codigo : VARCHAR(20) <<UQ>>
+  * nombre, tipo, prioridad, estado <<CHECK>>
+  * cliente_id : BIGINT <<FK>>
+  * ubicacion, latitud, longitud
+  * altitud_objetivo_m : INTEGER (5-120)
+  * fecha_programada, hora_inicio, hora_fin_estimada
+  * objetivo
+  * creado_por : BIGINT <<FK>>
+  inicio_real, fin_real, observaciones
+}
+entity "asignaciones_mision" as asig {
+  * id : BIGINT <<PK>>
+  --
+  * mision_id : BIGINT <<FK>>
+  * drone_id : BIGINT <<FK>>
+  * piloto_id : BIGINT <<FK>>
+  * asignado_por : BIGINT <<FK>>
+  * fecha_asignacion, activa
+}
+entity "puntos_ruta" as puntos {
+  * id : BIGINT <<PK>>
+  --
+  * mision_id : BIGINT <<FK>>
+  * orden : INTEGER  <<UQ(mision_id, orden)>>
+  * latitud, longitud, altitud_m
+  * accion : VARCHAR(20)
+}
+entity "telemetria" as tel {
+  * id : BIGINT <<PK>>
+  --
+  * mision_id : BIGINT <<FK>>
+  * registrado_en, latitud, longitud
+  * altitud_m, velocidad_kmh, bateria
+  * distancia_m, temperatura_c, tiempo_vuelo_s
+  * punto_ruta_actual, simulado
+}
+entity "evidencias" as ev {
+  * id : BIGINT <<PK>>
+  --
+  * mision_id : BIGINT <<FK>>
+  * tipo, nombre, url
+  descripcion
+  * visible_cliente : BOOLEAN
+  * subido_por : BIGINT <<FK>>
+  * fecha
+}
+entity "incidentes" as inc {
+  * id : BIGINT <<PK>>
+  --
+  * mision_id : BIGINT <<FK>>
+  * fecha, tipo, severidad, estado
+  * descripcion
+  registrado_por : BIGINT <<FK>>
+  resolucion
+}
+entity "reportes" as rep {
+  * id : BIGINT <<PK>>
+  --
+  * tipo, titulo, resumen, generado_en
+  mision_id : BIGINT <<FK>>
+  generado_por : BIGINT <<FK>>
+}
+entity "auditoria" as aud {
+  * id : BIGINT <<PK>>
+  --
+  usuario_id : BIGINT <<FK>>
+  * correo_usuario, accion, entidad
+  entidad_id, * descripcion, * fecha
+}
+entity "notificaciones" as notif {
+  * id : BIGINT <<PK>>
+  --
+  * usuario_id : BIGINT <<FK>>
+  * titulo, mensaje, leida, fecha
+  mision_id : BIGINT <<FK>>
+}
+
+roles ||--o{ rp
+permisos ||--o{ rp
+roles ||--o{ usuarios
+usuarios |o--o| clientes
+usuarios |o--o| pilotos
+pilotos ||--o{ cert
+clientes ||--o{ misiones
+usuarios ||--o{ misiones : crea
+misiones ||--o{ asig
+drones ||--o{ asig
+pilotos ||--o{ asig
+usuarios ||--o{ asig : asigna
+misiones ||--|{ puntos
+misiones ||--o{ tel
+misiones ||--o{ ev
+misiones ||--o{ inc
+misiones |o--o{ rep
+drones ||--o{ mant
+usuarios ||--o{ mant : técnico
+usuarios |o--o{ inc
+usuarios ||--o{ ev
+usuarios |o--o{ aud
+usuarios ||--o{ notif
+@enduml
