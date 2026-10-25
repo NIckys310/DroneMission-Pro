@@ -1,0 +1,8 @@
+**/node_modules
+**/target
+**/dist
+backend/data
+backend/uploads
+frontend/.vite
+.git
+docs

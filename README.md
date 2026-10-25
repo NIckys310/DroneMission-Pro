@@ -136,6 +136,17 @@ Contraseña para todos: **`Demo2026!`** (solo para la demostración; no son cred
 
 En la pantalla de login hay botones que llenan estos datos automáticamente.
 
+## 13.1 Desplegar en la nube (link público)
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/NIckys310/DroneMission-Pro)
+
+1. Pulsa el botón e inicia sesión en Render **con tu cuenta de GitHub** (plan gratuito, no pide tarjeta).
+2. Render lee `render.yaml`: pulsa **Apply / Deploy Blueprint**.
+3. Espera 5–10 minutos a que termine la construcción (`Dockerfile` de la raíz).
+4. Tu link queda en la parte superior del servicio, por ejemplo `https://dronemission-pro.onrender.com`.
+
+Detalles: un solo servicio sirve frontend y API (misma URL); usa H2 dentro del contenedor, así que los datos vuelven al estado demo cada vez que el servicio se reinicia. En el plan gratuito el servicio "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**.
+
 ## 14. API
 
 Resumen de endpoints, permisos y formato de errores en [docs/architecture/api-rest.md](docs/architecture/api-rest.md). Documentación interactiva en Swagger UI.

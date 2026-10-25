@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Configuración de seguridad:
  *  - API sin sesión (stateless) autenticada con JWT.
- *  - Rutas públicas: login, recuperación de contraseña, Swagger y archivos demo.
+ *  - Rutas públicas: login, recuperación de contraseña, Swagger, archivos demo y el frontend.
  *  - La autorización fina se hace con @PreAuthorize en cada controller.
  */
 @Configuration
@@ -53,7 +53,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/demo/**", "/h2-console/**", "/error").permitAll()
-                        .anyRequest().authenticated())
+                        // Toda la API exige token; el resto son archivos del frontend (cuando se sirve desde el backend)
+                        .requestMatchers("/api/**").authenticated()
+                        .anyRequest().permitAll())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, e) ->
                                 writeError(res, 401, "Unauthorized", "Debes iniciar sesión para acceder a este recurso", req.getRequestURI()))

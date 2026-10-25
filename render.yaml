@@ -1,0 +1,15 @@
+# Blueprint de Render: despliega DroneMission Pro (frontend + backend) en un solo servicio web gratuito.
+services:
+  - type: web
+    name: dronemission-pro
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SPRING_PROFILES_ACTIVE
+        value: h2
+      - key: SIMULATION_TIME_FACTOR
+        value: "3"
