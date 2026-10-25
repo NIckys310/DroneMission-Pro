@@ -2,7 +2,7 @@
 
 | Código | Categoría | Requerimiento | Cómo se cumple |
 |---|---|---|---|
-| RNF-001 | Seguridad | Las contraseñas nunca se almacenan en texto plano. | Hash BCrypt (`PasswordEncoder`); columna `contrasena_hash`. |
+| RNF-001 | Seguridad | Las contraseñas nunca se almacenan en texto plano. | Hash BCrypt con factor de costo 12 (`PasswordEncoder`); columna `contrasena_hash`. |
 | RNF-002 | Seguridad | Toda la API (excepto login y recuperación) exige un token JWT válido. | `JwtAuthenticationFilter` + `SecurityConfig` (stateless). |
 | RNF-003 | Seguridad | Cada endpoint verifica el permiso del rol. | `@PreAuthorize("hasAuthority('...')")` + tabla `rol_permisos`. |
 | RNF-004 | Seguridad | El cliente solo accede a sus misiones y el piloto a las asignadas. | `MissionAccessService`. |
@@ -22,3 +22,10 @@
 | RNF-018 | Escalabilidad | Agregar un tipo de misión no modifica los servicios existentes. | Patrón Strategy: nueva clase `@Component`. |
 | RNF-019 | Trazabilidad | Las operaciones importantes quedan auditadas. | `AuditService` + observador `AuditMissionListener`. |
 | RNF-020 | Portabilidad | Funciona en Windows, Linux y macOS. | Java 17+, Node 18+, Maven Wrapper, scripts `.bat` y `.sh`. |
+| RNF-021 | Seguridad | Las contraseñas deben ser seguras: 8+ caracteres, mayúscula, minúscula, número y sin datos personales. | `PasswordPolicy` (backend) y `PasswordChecklist` (frontend). |
+| RNF-022 | Seguridad | Tras 5 intentos fallidos la cuenta se bloquea 15 minutos. | `AuthService.registerFailedAttempt`; columnas `intentos_fallidos`, `bloqueado_hasta`. |
+| RNF-023 | Seguridad | Máximo 20 intentos por minuto y por IP en login, registro y recuperación. | `AuthRateLimitFilter` (HTTP 429). |
+| RNF-024 | Seguridad | Ninguna cuenta registrada obtiene permisos sin aprobación de un administrador. | Cuenta inactiva con `pendiente_aprobacion`. |
+| RNF-025 | Seguridad | En un servidor público no existen credenciales conocidas: usuarios demo desactivados, consola H2 deshabilitada y token de recuperación oculto. | Variables `APP_DEMO_USERS`, `H2_CONSOLE_ENABLED`, `APP_SHOW_RESET_TOKEN` en `render.yaml`. |
+| RNF-026 | Seguridad | La contraseña del administrador dueño nunca está en el código ni en el repositorio. | Variables secretas `ADMIN_*` (`sync: false` en Render) y `SecurityBootstrap`. |
+| RNF-027 | Disponibilidad | Las cuentas y datos se conservan aunque el servidor se reinicie. | PostgreSQL administrado en Render. |

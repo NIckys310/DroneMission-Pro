@@ -6,7 +6,7 @@ import type { RoleName, UserInfo } from '../types';
 interface AuthState {
   user: UserInfo | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<UserInfo>;
+  login: (identifier: string, password: string) => Promise<UserInfo>;
   logout: () => Promise<void>;
   can: (permission: string) => boolean;
   hasRole: (...roles: RoleName[]) => boolean;
@@ -31,8 +31,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .finally(() => setLoading(false));
   }, []);
 
-  const login = useCallback(async (email: string, password: string) => {
-    const response = await authApi.login(email, password);
+  const login = useCallback(async (identifier: string, password: string) => {
+    const response = await authApi.login(identifier, password);
     localStorage.setItem(TOKEN_KEY, response.token);
     setUser(response.user);
     return response.user;

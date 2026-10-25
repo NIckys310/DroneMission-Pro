@@ -1,0 +1,44 @@
+@startuml 07-registro-aprobacion
+!include ../_estilo.iuml
+title Secuencia - Registrarse y aprobación de la cuenta (CU-019, CU-020)
+autonumber
+actor Visitante
+participant "Frontend\nRegisterPage" as FE
+participant "AuthController" as C
+participant "AuthService" as S
+participant "PasswordPolicy" as PP
+participant "UserRepository" as R
+participant "NotificationService" as N
+actor Administrador as Admin
+participant "UserService" as US
+database "BD" as DB
+
+Visitante -> FE : nombre, usuario, correo, contraseña
+FE -> FE : lista de requisitos en vivo
+FE -> C : POST /api/auth/register
+C -> S : register(request)
+S -> S : ¿contraseñas coinciden?
+S -> PP : validate(contraseña, datos personales)
+alt contraseña débil
+  PP --> FE : 400 "La contraseña no es segura…"
+end
+S -> R : existe correo / usuario?
+alt ya existen
+  S --> FE : 409
+end
+S -> R : save(usuario: activo = false,\npendiente_aprobacion = true, contraseña BCrypt)
+R -> DB : INSERT usuarios
+S -> N : notificar a los administradores
+S --> FE : 201 "Un administrador debe aprobarla"
+
+== Más tarde ==
+Admin -> FE : Usuarios > Cuentas pendientes > Aprobar (rol)
+FE -> C : POST /api/users/{id}/approve
+C -> US : approve(id, rol, ficha piloto/cliente)
+US -> US : activo = true, pendiente = false, rol
+US -> DB : UPDATE usuarios (+ vincular ficha)
+US --> FE : 200
+Visitante -> FE : inicia sesión con su usuario
+FE -> C : POST /api/auth/login
+C --> FE : 200 token JWT con los permisos de su rol
+@enduml

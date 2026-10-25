@@ -4,6 +4,7 @@ title Secuencia - Iniciar sesión (CU-001)
 autonumber
 actor Usuario
 participant "Frontend\nLoginPage" as FE
+participant "AuthRateLimitFilter" as RL
 participant "AuthController" as C
 participant "AuthService" as S
 participant "UserRepository" as R
@@ -12,26 +13,38 @@ participant "JwtService" as J
 participant "AuditService" as A
 database "BD" as DB
 
-Usuario -> FE : correo + contraseña
+Usuario -> FE : correo o usuario + contraseña
 FE -> FE : validar formato (frontend)
-FE -> C : POST /api/auth/login
+FE -> RL : POST /api/auth/login
+alt más de 20 intentos/minuto desde la IP
+  RL --> FE : 429 "Demasiados intentos"
+end
+RL -> C : continuar
 C -> C : @Valid LoginRequest
 C -> S : login(request)
-S -> R : findByEmailIgnoreCase(correo)
+S -> R : findByEmail o findByUsername(identificador)
 R -> DB : SELECT usuarios
 DB --> R : usuario
-alt usuario inexistente o contraseña incorrecta
+alt cuenta bloqueada (bloqueado_hasta > ahora)
+  S --> C : AuthenticationFailedException
+  C --> FE : 401 "Cuenta bloqueada temporalmente"
+else usuario inexistente o contraseña incorrecta
   S -> P : matches(contraseña, hash)
   P --> S : false
+  S -> S : intentos_fallidos + 1\n(al 5º: bloquear 15 min)
   S -> A : logAs(LOGIN_FALLIDO)
   S --> C : AuthenticationFailedException
-  C --> FE : 401 "Correo o contraseña incorrectos"
+  C --> FE : 401 "Usuario o contraseña incorrectos"
+else cuenta pendiente de aprobación
+  S --> C : AuthenticationFailedException
+  C --> FE : 401 "Tu cuenta está pendiente de aprobación"
 else usuario inactivo
   S --> C : AuthenticationFailedException
   C --> FE : 401 "El usuario está inactivo"
 else credenciales válidas
   S -> P : matches(contraseña, hash)
   P --> S : true
+  S -> S : intentos_fallidos = 0
   S -> J : generateToken(usuario)
   J --> S : JWT firmado (8 h)
   S -> A : logAs(LOGIN)

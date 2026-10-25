@@ -37,6 +37,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtFilter;
+    private final AuthRateLimitFilter rateLimitFilter;
     private final ObjectMapper objectMapper;
 
     @Value("${app.cors.allowed-origins}")
@@ -50,7 +51,8 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .headers(h -> h.frameOptions(f -> f.sameOrigin())) // necesario para la consola H2
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/login", "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
+                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/config",
+                                "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/demo/**", "/h2-console/**", "/error").permitAll()
                         // Toda la API exige token; el resto son archivos del frontend (cuando se sirve desde el backend)
@@ -61,13 +63,14 @@ public class SecurityConfig {
                                 writeError(res, 401, "Unauthorized", "Debes iniciar sesión para acceder a este recurso", req.getRequestURI()))
                         .accessDeniedHandler((req, res, e) ->
                                 writeError(res, 403, "Forbidden", "No tienes permiso para realizar esta operación", req.getRequestURI())))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, JwtAuthenticationFilter.class);
         return http.build();
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return new BCryptPasswordEncoder(12);
     }
 
     @Bean

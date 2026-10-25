@@ -3,6 +3,7 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import RegisterPage from './pages/RegisterPage';
 import NotFoundPage from './pages/NotFoundPage';
 import HomePage from './pages/home/HomePage';
 import DronesPage from './pages/drones/DronesPage';
@@ -26,6 +27,7 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<LoginPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/register" element={<RegisterPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>

@@ -5,6 +5,9 @@ spring:
     username: sa
     password:
 app:
+  security:
+    # Todas las pruebas usan la misma IP: se sube el límite para no bloquear la suite
+    auth-requests-per-minute: 100000
   storage:
     path: ./target/test-uploads
   simulation:

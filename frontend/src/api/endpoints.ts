@@ -1,6 +1,6 @@
 import { http } from './client';
 import type {
-  AssignmentOptions, AuditEntry, Client, DashboardData, Drone, DroneHistory, DroneReport, Evidence, FlightPlan,
+  AssignmentOptions, AuditEntry, AuthConfig, Client, DashboardData, Drone, DroneHistory, DroneReport, Evidence, FlightPlan,
   Incident, LoginResponse, Maintenance, MaintenanceReport, Mission, MissionReport, Notification, Permission, Pilot,
   PilotMissionEntry, PilotReport, ReportEntry, Role, TelemetryFeed, User, UserInfo,
 } from '../types';
@@ -16,7 +16,9 @@ const clean = (params?: Params) =>
 const data = <T,>(promise: Promise<{ data: T }>) => promise.then((r) => r.data);
 
 export const authApi = {
-  login: (email: string, password: string) => data<LoginResponse>(http.post('/auth/login', { email, password })),
+  login: (identifier: string, password: string) => data<LoginResponse>(http.post('/auth/login', { identifier, password })),
+  register: (body: unknown) => data<{ message: string }>(http.post('/auth/register', body)),
+  config: () => data<AuthConfig>(http.get('/auth/config')),
   me: () => data<UserInfo>(http.get('/auth/me')),
   logout: () => http.post('/auth/logout'),
   forgotPassword: (email: string) =>
@@ -115,6 +117,8 @@ export const userApi = {
   create: (body: unknown) => data<User>(http.post('/users', body)),
   update: (id: number, body: unknown) => data<User>(http.put(`/users/${id}`, body)),
   deactivate: (id: number) => http.delete(`/users/${id}`),
+  approve: (id: number, body: unknown) => data<User>(http.post(`/users/${id}/approve`, body)),
+  reject: (id: number) => http.post(`/users/${id}/reject`),
   roles: () => data<Role[]>(http.get('/roles')),
   permissions: () => data<Permission[]>(http.get('/permissions')),
   updateRolePermissions: (id: number, permissions: string[]) => data<Role>(http.put(`/roles/${id}/permissions`, { permissions })),

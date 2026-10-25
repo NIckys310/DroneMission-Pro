@@ -6,7 +6,7 @@
 |---|---|---|---|
 | Unitarias | Reglas puras sin base de datos: máquina de estados, Builder, Strategy, Factory, licencias, reglas de asignación (con Mockito) | JUnit 5, Mockito, AssertJ | `backend/src/test/java/com/dronemission/unit` |
 | Integración | La aplicación completa con H2 en memoria, migraciones y datos demo, mediante peticiones HTTP reales | Spring Boot Test, MockMvc | `backend/src/test/java/com/dronemission/integration` |
-| Frontend | Validaciones de formularios | Vitest | `frontend/src/utils/validation.test.ts` |
+| Frontend | Validaciones de formularios y contraseñas | Vitest | `frontend/src/utils/*.test.ts` |
 | Manual / aceptación | Recorrido de la demo por cada rol en el navegador | Guion de [casos-de-prueba.md](casos-de-prueba.md) | — |
 
 Cada prueba de integración es `@Transactional`: los cambios se deshacen al terminar y las pruebas no dependen unas de otras.
@@ -20,8 +20,8 @@ cd frontend && npm test
 
 ## Resultado actual
 
-- Backend: **80 pruebas, 0 fallos** (45 unitarias y 35 de integración).
-- Frontend: **5 pruebas, 0 fallos**.
+- Backend: **89 pruebas, 0 fallos** (48 unitarias y 41 de integración).
+- Frontend: **9 pruebas, 0 fallos** (validaciones y contraseñas seguras).
 
 | Clase de prueba | Pruebas |
 |---|---|
@@ -31,7 +31,9 @@ cd frontend && npm test
 | MissionBuilderTest | 6 |
 | DroneFactoryTest | 2 |
 | PilotLicenseTest | 2 |
-| AuthIntegrationTest | 4 |
+| PasswordPolicyTest | 3 |
+| AuthIntegrationTest | 5 |
+| RegistrationSecurityIntegrationTest | 5 |
 | DroneCrudIntegrationTest | 4 |
 | PilotCrudIntegrationTest | 3 |
 | MissionFlowIntegrationTest | 5 |

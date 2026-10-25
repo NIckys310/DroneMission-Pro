@@ -6,11 +6,11 @@ Cada requerimiento está implementado y trazado en la [matriz de trazabilidad](.
 |---|---|
 | **Código** | RF-001 |
 | **Nombre** | Iniciar sesión |
-| **Descripción** | El sistema autentica al usuario con correo y contraseña y entrega un token JWT con su rol y permisos. |
+| **Descripción** | El sistema autentica al usuario con su correo o nombre de usuario y su contraseña, y entrega un token JWT con su rol y permisos. |
 | **Actor** | Todos |
-| **Precondición** | El usuario está registrado y activo. |
-| **Flujo principal** | 1. Ingresa correo y contraseña.<br>2. El sistema valida el formato.<br>3. El sistema verifica la contraseña cifrada (BCrypt).<br>4. Genera el token JWT (8 h).<br>5. Redirige al inicio según el rol. |
-| **Flujo alternativo** | • Contraseña incorrecta o usuario inexistente: 401 'Correo o contraseña incorrectos'.<br>• Usuario inactivo: 401 'El usuario está inactivo'. |
+| **Precondición** | El usuario está registrado, aprobado y activo. |
+| **Flujo principal** | 1. Ingresa correo o usuario y contraseña.<br>2. El sistema verifica que la cuenta no esté bloqueada.<br>3. Verifica la contraseña cifrada (BCrypt).<br>4. Genera el token JWT (8 h).<br>5. Redirige al inicio según el rol. |
+| **Flujo alternativo** | • Contraseña incorrecta o usuario inexistente: 401 'Usuario o contraseña incorrectos'.<br>• 5 intentos fallidos: cuenta bloqueada 15 minutos.<br>• Cuenta pendiente de aprobación o inactiva: 401 con el motivo.<br>• Más de 20 intentos por minuto desde la misma IP: 429. |
 | **Postcondición** | Sesión iniciada; queda auditoría LOGIN. |
 | **Caso de uso** | CU-001 |
 
@@ -377,6 +377,45 @@ Cada requerimiento está implementado y trazado en la [matriz de trazabilidad](.
 | **Flujo alternativo** | • — |
 | **Postcondición** | — |
 | **Caso de uso** | CU-016 |
+
+## RF-031 — Registrarse
+| Campo | Detalle |
+|---|---|
+| **Código** | RF-031 |
+| **Nombre** | Registrarse |
+| **Descripción** | Cualquier persona crea su cuenta con nombre, usuario, correo y contraseña segura; la cuenta queda pendiente de aprobación. |
+| **Actor** | Visitante |
+| **Precondición** | El registro está habilitado. |
+| **Flujo principal** | 1. Abre 'Crear cuenta'.<br>2. Completa sus datos.<br>3. El sistema valida contraseña segura y que usuario y correo sean únicos.<br>4. Crea la cuenta inactiva y pendiente.<br>5. Notifica a los administradores. |
+| **Flujo alternativo** | • Contraseña débil o que contiene su nombre: 400.<br>• Usuario o correo ya usados: 409.<br>• Las contraseñas no coinciden: 400. |
+| **Postcondición** | Cuenta pendiente de aprobación. |
+| **Caso de uso** | CU-019 |
+
+## RF-032 — Aprobar o rechazar cuentas
+| Campo | Detalle |
+|---|---|
+| **Código** | RF-032 |
+| **Nombre** | Aprobar o rechazar cuentas |
+| **Descripción** | El administrador aprueba una cuenta registrada asignándole su rol (y su ficha de piloto o cliente) o la rechaza. |
+| **Actor** | Administrador |
+| **Precondición** | Existe una cuenta pendiente. |
+| **Flujo principal** | 1. Abre Usuarios.<br>2. Revisa 'Cuentas pendientes'.<br>3. Pulsa Aprobar, elige el rol y vincula la ficha.<br>4. El sistema activa la cuenta. |
+| **Flujo alternativo** | • Rechazar: la cuenta se elimina.<br>• Ficha ya vinculada a un usuario activo: 400. |
+| **Postcondición** | El usuario puede iniciar sesión con su rol. |
+| **Caso de uso** | CU-020 |
+
+## RF-033 — Administrador propietario
+| Campo | Detalle |
+|---|---|
+| **Código** | RF-033 |
+| **Nombre** | Administrador propietario |
+| **Descripción** | Al arrancar, el sistema crea la cuenta del administrador dueño a partir de variables de entorno secretas y, en la nube, desactiva los usuarios demo. |
+| **Actor** | Sistema |
+| **Precondición** | Variables ADMIN_* definidas. |
+| **Flujo principal** | 1. Lee ADMIN_EMAIL, ADMIN_USERNAME, nombre y ADMIN_PASSWORD.<br>2. Valida que la contraseña sea segura.<br>3. Crea el administrador si no existe.<br>4. Si APP_DEMO_USERS=false, desactiva los usuarios demo. |
+| **Flujo alternativo** | • Contraseña insegura: no se crea y se registra el error.<br>• ADMIN_RESET_PASSWORD=true: restablece la contraseña del dueño. |
+| **Postcondición** | El dueño puede entrar como administrador. |
+| **Caso de uso** | CU-020 |
 
 ## RF-030 — Notificaciones
 | Campo | Detalle |

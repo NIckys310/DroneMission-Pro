@@ -332,9 +332,12 @@ export interface User {
   firstName: string;
   lastName: string;
   fullName: string;
+  username: string;
   email: string;
   role: RoleName;
   active: boolean;
+  pendingApproval: boolean;
+  lockedUntil: string | null;
   pilotId: number | null;
   clientId: number | null;
   lastLoginAt: string | null;
@@ -371,4 +374,11 @@ export interface Notification {
   missionId: number | null;
   read: boolean;
   date: string;
+}
+
+export interface AuthConfig {
+  demoUsersEnabled: boolean;
+  registrationEnabled: boolean;
+  showResetToken: boolean;
+  passwordPolicy: string;
 }

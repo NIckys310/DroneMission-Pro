@@ -21,8 +21,10 @@ RUN mvn -q package -DskipTests
 FROM eclipse-temurin:17-jre
 WORKDIR /app
 COPY --from=backend /app/backend/target/dronemission-backend-1.0.0.jar app.jar
+# UTF-8 para que nombres con tildes y ñ (por ejemplo, del administrador) se lean bien
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 # Memoria ajustada al plan gratuito (512 MB)
-ENV JAVA_OPTS="-Xmx300m -Xss512k -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
+ENV JAVA_OPTS="-Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8 -Xmx300m -Xss512k -XX:MaxMetaspaceSize=150m -XX:+UseSerialGC -XX:TieredStopAtLevel=1"
 ENV SPRING_PROFILES_ACTIVE=h2
 EXPOSE 8080
 CMD ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

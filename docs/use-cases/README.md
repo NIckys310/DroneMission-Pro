@@ -5,6 +5,8 @@ Diagrama: [`docs/diagrams/use-case/casos-de-uso.puml`](../diagrams/use-case/caso
 | Código | Caso de uso | Actor principal |
 |---|---|---|
 | CU-001 | [Iniciar sesión](CU-001-iniciar-sesion.md) | Todos los usuarios |
+| CU-019 | [Registrarse](CU-019-registrarse.md) | Visitante |
+| CU-020 | [Aprobar cuenta](CU-020-aprobar-cuenta.md) | Administrador |
 | CU-002 | [Gestionar usuarios y roles](CU-002-gestionar-usuarios-y-roles.md) | Administrador |
 | CU-003 | [Gestionar drones](CU-003-gestionar-drones.md) | Administrador (consulta: Operador, Técnico) |
 | CU-004 | [Gestionar pilotos](CU-004-gestionar-pilotos.md) | Administrador (consulta: Operador) |

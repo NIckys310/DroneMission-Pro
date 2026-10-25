@@ -34,4 +34,7 @@ Las pruebas CP-xxx están descritas en [testing/casos-de-prueba.md](testing/caso
 | RF-027 Generar reportes | CU-015 | Reportes | `GET /api/reports/**` | reportes | CP-013 |
 | RF-028 Consultar dashboard | CU-016 | Dashboard | `GET /api/dashboard` | todas | CP-017 |
 | RF-029 Auditoría | CU-016 | Auditoría | `GET /api/audit, GET /api/missions/{id}/history` | auditoria | CP-013 |
+| RF-031 Registrarse | CU-019 | Autenticación | `POST /api/auth/register` | usuarios, notificaciones | CP-019, CP-020 |
+| RF-032 Aprobar o rechazar cuentas | CU-020 | Usuarios | `POST /api/users/{id}/approve, /reject` | usuarios, pilotos, clientes | CP-019 |
+| RF-033 Administrador propietario | CU-020 | Configuración | `(arranque)` | usuarios | CP-022 |
 | RF-030 Notificaciones | CU-011 | Notificaciones | `GET /api/notifications, PATCH /{id}/read` | notificaciones | CP-013 |

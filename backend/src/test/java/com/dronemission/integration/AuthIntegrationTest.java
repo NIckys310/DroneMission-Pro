@@ -28,16 +28,25 @@ class AuthIntegrationTest extends IntegrationTestBase {
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"admin@dronemission.local\",\"password\":\"incorrecta\"}"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Correo o contraseña incorrectos"));
+                .andExpect(jsonPath("$.message").value("Usuario o contraseña incorrectos"));
     }
 
     @Test
-    @DisplayName("CP-002: correo con formato inválido devuelve 400")
-    void invalidEmail() throws Exception {
+    @DisplayName("CP-002: identificador vacío devuelve 400")
+    void blankIdentifier() throws Exception {
         mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"no-es-correo\",\"password\":\"x\"}"))
+                        .content("{\"identifier\":\"\",\"password\":\"x\"}"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors.email").exists());
+                .andExpect(jsonPath("$.fieldErrors.identifier").exists());
+    }
+
+    @Test
+    @DisplayName("CP-001: también se puede iniciar sesión con el nombre de usuario")
+    void loginWithUsername() throws Exception {
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"identifier\":\"operador\",\"password\":\"Demo2026!\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role").value("OPERADOR"));
     }
 
     @Test

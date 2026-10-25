@@ -16,12 +16,15 @@ Formato de error común:
 | 403 | El rol no tiene el permiso |
 | 404 | Recurso inexistente |
 | 409 | Transición de estado inválida o valor duplicado |
+| 429 | Demasiados intentos de login/registro desde la misma IP |
 
 ## Endpoints
 
 | Método | Ruta | Permiso | Descripción |
 |---|---|---|---|
-| POST | `/api/auth/login` | público | Iniciar sesión |
+| POST | `/api/auth/login` | público | Iniciar sesión con correo **o** usuario (`identifier`) |
+| POST | `/api/auth/register` | público | Crear cuenta (queda pendiente de aprobación) |
+| GET | `/api/auth/config` | público | Registro habilitado, usuarios demo y política de contraseñas |
 | GET | `/api/auth/me` | autenticado | Usuario actual |
 | POST | `/api/auth/logout` | autenticado | Cerrar sesión (auditoría) |
 | POST | `/api/auth/forgot-password` | público | Recuperación simulada |
@@ -29,6 +32,8 @@ Formato de error común:
 | GET | `/api/dashboard` | DASHBOARD_VER | Indicadores y alertas |
 | GET/POST | `/api/users` | USUARIOS_GESTIONAR | Listar / crear usuarios |
 | GET/PUT/DELETE | `/api/users/{id}` | USUARIOS_GESTIONAR | Consultar / editar / desactivar |
+| POST | `/api/users/{id}/approve` | USUARIOS_GESTIONAR | Aprobar cuenta y asignar rol |
+| POST | `/api/users/{id}/reject` | USUARIOS_GESTIONAR | Rechazar cuenta pendiente |
 | GET | `/api/roles` | USUARIOS_GESTIONAR | Roles con permisos |
 | GET | `/api/permissions` | ROLES_GESTIONAR | Catálogo de permisos |
 | PUT | `/api/roles/{id}/permissions` | ROLES_GESTIONAR | Cambiar permisos del rol |

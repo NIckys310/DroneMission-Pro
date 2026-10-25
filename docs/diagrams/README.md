@@ -19,6 +19,7 @@ o abre los `.puml` con la extensión *PlantUML* de VS Code / IntelliJ, o en http
 | Secuencia: iniciar misión | [sequence/04-iniciar-mision.puml](sequence/04-iniciar-mision.puml) | [png](png/sequence/04-iniciar-mision.png) |
 | Secuencia: finalizar misión | [sequence/05-finalizar-mision.puml](sequence/05-finalizar-mision.puml) | [png](png/sequence/05-finalizar-mision.png) |
 | Secuencia: registrar mantenimiento | [sequence/06-registrar-mantenimiento.puml](sequence/06-registrar-mantenimiento.puml) | [png](png/sequence/06-registrar-mantenimiento.png) |
+| Secuencia: registro y aprobación | [sequence/07-registro-aprobacion.puml](sequence/07-registro-aprobacion.puml) | [png](png/sequence/07-registro-aprobacion.png) |
 | Actividad: crear misión | [activity/01-crear-mision.puml](activity/01-crear-mision.puml) | [png](png/activity/01-crear-mision.png) |
 | Actividad: ejecutar misión | [activity/02-ejecutar-mision.puml](activity/02-ejecutar-mision.puml) | [png](png/activity/02-ejecutar-mision.png) |
 | Actividad: gestionar mantenimiento | [activity/03-gestionar-mantenimiento.puml](activity/03-gestionar-mantenimiento.puml) | [png](png/activity/03-gestionar-mantenimiento.png) |

@@ -22,6 +22,19 @@ public class AuthController {
         return authService.login(request);
     }
 
+    @PostMapping("/register")
+    @ResponseStatus(org.springframework.http.HttpStatus.CREATED)
+    @Operation(summary = "Crear una cuenta (queda pendiente de aprobación del administrador)")
+    public MessageResponse register(@Valid @RequestBody RegisterRequest request) {
+        return authService.register(request);
+    }
+
+    @GetMapping("/config")
+    @Operation(summary = "Opciones públicas del login (registro habilitado, usuarios demo, política de contraseñas)")
+    public AuthConfigResponse config() {
+        return authService.config();
+    }
+
     @GetMapping("/me")
     @Operation(summary = "Datos del usuario autenticado")
     public UserInfo me() {

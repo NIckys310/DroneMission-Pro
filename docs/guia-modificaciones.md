@@ -194,6 +194,18 @@ Después de cambiar una regla, ejecuta `mvnw test`: si alguna prueba falla, actu
 
 ---
 
+## 8b. Seguridad y cuentas
+
+| Quiero… | Cómo |
+|---|---|
+| Aprobar a alguien que se registró | Entra como administrador → **Usuarios** → *Cuentas pendientes* → **Aprobar** y elige el rol |
+| Desbloquear una cuenta (5 intentos fallidos) | **Usuarios** → editar → escribir una **nueva contraseña** → Guardar |
+| Recuperar MI contraseña de administrador en la nube | Render → servicio → *Environment*: cambia `ADMIN_PASSWORD` y pon `ADMIN_RESET_PASSWORD=true` → *Save, rebuild and deploy*. Luego vuelve a ponerlo en `false` |
+| Cambiar los requisitos de contraseña | `backend/.../common/PasswordPolicy.java` **y** `frontend/src/utils/password.ts` (deben coincidir) |
+| Cambiar intentos permitidos o minutos de bloqueo | Variables `APP_MAX_FAILED_ATTEMPTS` y `APP_LOCK_MINUTES` |
+| Cerrar el registro público | `APP_REGISTRATION_ENABLED=false` (el enlace "Crear cuenta" desaparece) |
+| Volver a ver los usuarios demo | `APP_DEMO_USERS=true` (¡nunca en un servidor público!) |
+
 ## 9. Cambios visuales rápidos
 
 | Quiero cambiar… | Archivo |

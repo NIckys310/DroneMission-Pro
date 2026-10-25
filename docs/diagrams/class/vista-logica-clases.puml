@@ -10,10 +10,15 @@ class User {
   -firstName: String
   -lastName: String
   -email: String
+  -username: String
   -passwordHash: String
   -active: boolean
+  -pendingApproval: boolean
+  -failedAttempts: int
+  -lockedUntil: LocalDateTime
   -lastLoginAt: LocalDateTime
   +getFullName(): String
+  +isLocked(now): boolean
   +hasRole(RoleName): boolean
 }
 class Role {

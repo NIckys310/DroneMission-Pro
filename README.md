@@ -2,7 +2,7 @@
 
 **Sistema de gestión de operaciones y misiones con drones.** Proyecto de la materia *Diseño de Software*: frontend React + TypeScript, backend Spring Boot, base de datos relacional, seguridad JWT con roles, drone virtual con telemetría simulada, reportes PDF, pruebas, diagramas UML y documentación completa.
 
-**🌐 Demo en línea:** https://dronemission-pro.onrender.com — usuarios demo con contraseña `Demo2026!` (la primera visita puede tardar ~1 minuto en despertar el servidor).
+**🌐 En línea:** https://dronemission-pro.onrender.com — inicia sesión con tu cuenta o pulsa **Crear cuenta** (un administrador debe aprobarla). La primera visita puede tardar ~1 minuto en despertar el servidor.
 
 ![Dashboard](docs/screenshots/02-dashboard.png)
 
@@ -20,7 +20,7 @@ Diseñar y desarrollar un sistema que permita administrar de forma organizada, s
 
 ## 3. Funcionalidades
 
-- Login con JWT, recuperación de contraseña simulada y 5 roles con permisos configurables.
+- Login con correo **o** nombre de usuario (JWT), **registro público con aprobación del administrador**, contraseñas seguras, bloqueo por intentos fallidos y 5 roles con permisos configurables.
 - Dashboard con indicadores, gráficas, alertas, incidentes y mantenimientos pendientes.
 - CRUD de drones (búsqueda, filtros, historial, batería), pilotos (licencias y certificaciones), clientes y usuarios.
 - Misiones con **máquina de estados**: Borrador → Pendiente → Programada → En preparación → En vuelo ⇄ Pausada → Finalizada / Cancelada.
@@ -82,6 +82,14 @@ Toda la configuración tiene valores por defecto para desarrollo. Para cambiarla
 | `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | localhost, 5432, dronemission, dronemission, dronemission | Conexión PostgreSQL |
 | `JWT_SECRET` | clave de desarrollo | Clave de firma JWT (≥ 32 caracteres). **Cámbiala en producción** |
 | `JWT_EXPIRATION_MINUTES` | 480 | Duración del token |
+| `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME`, `ADMIN_PASSWORD` | vacío | Administrador dueño que se crea al arrancar |
+| `ADMIN_RESET_PASSWORD` | false | `true` vuelve a poner `ADMIN_PASSWORD` al dueño |
+| `APP_DEMO_USERS` | true | `false` desactiva los usuarios demo (nube) |
+| `APP_REGISTRATION_ENABLED` | true | Permite crear cuentas desde el login |
+| `APP_SHOW_RESET_TOKEN` | true | Muestra el token de recuperación simulado (`false` en la nube) |
+| `H2_CONSOLE_ENABLED` | true | Consola web de H2 (`false` en la nube) |
+| `APP_MAX_FAILED_ATTEMPTS` / `APP_LOCK_MINUTES` | 5 / 15 | Bloqueo por intentos fallidos |
+| `APP_AUTH_REQUESTS_PER_MINUTE` | 20 | Límite de intentos por IP |
 | `CORS_ALLOWED_ORIGINS` | http://localhost:5173 | Origen del frontend |
 | `STORAGE_PATH` | ./uploads | Carpeta de evidencias |
 | `SIMULATION_TICK_MS` / `SIMULATION_TIME_FACTOR` | 2000 / 3 | Frecuencia y aceleración del drone virtual |
@@ -123,7 +131,25 @@ npm run dev
 ```
 Abre **http://localhost:5173**. (Arranca primero el backend.)
 
-## 13. Usuarios demo
+## 13. Usuarios y seguridad
+
+### Cuentas
+- **Administrador dueño:** se crea al arrancar con las variables secretas `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME` y `ADMIN_PASSWORD` (nunca se guardan en el código).
+- **Demás personas:** pulsan **Crear cuenta** en el login. La cuenta queda **pendiente**; el administrador la aprueba en *Usuarios* y le asigna su rol (y su ficha de piloto o cliente). Hasta entonces no puede entrar.
+- Se puede iniciar sesión con el **correo o el nombre de usuario**.
+
+### Medidas de seguridad
+| Medida | Detalle |
+|---|---|
+| Contraseñas seguras | 8+ caracteres, mayúscula, minúscula, número y sin el nombre/usuario/correo (se valida en el frontend **y** en el backend) |
+| Cifrado | BCrypt (costo 12); nunca se guarda la contraseña |
+| Fuerza bruta | 5 intentos fallidos ⇒ cuenta bloqueada 15 minutos; máx. 20 intentos por minuto por IP (HTTP 429) |
+| Mínimo privilegio | Las cuentas nuevas no tienen permisos hasta ser aprobadas |
+| Servidor público | Usuarios demo desactivados, consola H2 apagada, token de recuperación oculto, JWT con clave generada por Render |
+| Desbloquear / olvidé mi contraseña | El administrador asigna una nueva contraseña en *Usuarios* (eso también desbloquea). Si el dueño olvida la suya: `ADMIN_RESET_PASSWORD=true` en Render y reiniciar |
+
+### Usuarios demo (solo en tu computadora)
+En local (`APP_DEMO_USERS=true`, por defecto) existen estos usuarios. En la nube están **desactivados** porque su contraseña es pública.
 
 Contraseña para todos: **`Demo2026!`** (solo para la demostración; no son credenciales reales).
 
@@ -136,7 +162,7 @@ Contraseña para todos: **`Demo2026!`** (solo para la demostración; no son cred
 | Técnico | tecnico@dronemission.local | Mantenimientos, estado técnico, carga de batería |
 | Cliente | cliente@dronemission.local | Misiones de AgroValle S.A.S. y reportes PDF |
 
-En la pantalla de login hay botones que llenan estos datos automáticamente.
+En local, la pantalla de login muestra botones que llenan estos datos automáticamente. También se puede entrar con el usuario (`admin`, `operador`, `piloto`…).
 
 ## 13.1 Desplegar en la nube (link público)
 
@@ -147,7 +173,10 @@ En la pantalla de login hay botones que llenan estos datos automáticamente.
 3. Espera 5–10 minutos a que termine la construcción (`Dockerfile` de la raíz).
 4. Tu link queda en la parte superior del servicio, por ejemplo `https://dronemission-pro.onrender.com`.
 
-Detalles: un solo servicio sirve frontend y API (misma URL); usa H2 dentro del contenedor, así que los datos vuelven al estado demo cada vez que el servicio se reinicia. En el plan gratuito el servicio "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**.
+Detalles:
+- Un solo servicio sirve frontend y API (misma URL) y usa una base **PostgreSQL gratuita de Render** (`dronemission-db`), así que las cuentas y los datos se conservan.
+- **Crear tu cuenta de administrador:** en Render abre el servicio `dronemission-pro` → **Environment** y escribe `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME` y `ADMIN_PASSWORD` (8+ caracteres con mayúscula, minúscula y número) → **Save, rebuild and deploy**.
+- El plan gratuito "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**. La base de datos gratuita de Render dura 30 días; después se puede recrear o pasar a un plan pago.
 
 ## 14. API
 
@@ -162,8 +191,8 @@ La presentación con las vistas está en [docs/presentacion/DroneMission-Pro-Vis
 ## 16. Pruebas
 
 ```bash
-cd backend && ./mvnw test     # 80 pruebas: unitarias + integración (H2 en memoria)
-cd frontend && npm test       # validaciones del frontend
+cd backend && ./mvnw test     # 89 pruebas: unitarias + integración (H2 en memoria)
+cd frontend && npm test       # 9 pruebas: validaciones y contraseñas seguras
 ```
 Plan y casos de prueba: [docs/testing](docs/testing/plan-de-pruebas.md). Matriz de trazabilidad: [docs/trazabilidad.md](docs/trazabilidad.md).
 

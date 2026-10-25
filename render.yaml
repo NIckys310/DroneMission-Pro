@@ -1,4 +1,16 @@
-# Blueprint de Render: despliega DroneMission Pro (frontend + backend) en un solo servicio web gratuito.
+# =====================================================================
+# Blueprint de Render: DroneMission Pro (frontend + backend en un servicio)
+# con base de datos PostgreSQL gratuita para que las cuentas no se pierdan.
+#
+# Las variables ADMIN_* son SECRETAS (sync: false): Render las pide en su
+# panel y NUNCA quedan guardadas en GitHub.
+# =====================================================================
+databases:
+  - name: dronemission-db
+    databaseName: dronemission
+    user: dronemission
+    plan: free
+
 services:
   - type: web
     name: dronemission-pro
@@ -7,9 +19,39 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: postgres
+      - key: DB_HOST
+        fromDatabase: { name: dronemission-db, property: host }
+      - key: DB_PORT
+        fromDatabase: { name: dronemission-db, property: port }
+      - key: DB_NAME
+        fromDatabase: { name: dronemission-db, property: database }
+      - key: DB_USER
+        fromDatabase: { name: dronemission-db, property: user }
+      - key: DB_PASSWORD
+        fromDatabase: { name: dronemission-db, property: password }
       - key: JWT_SECRET
         generateValue: true
-      - key: SPRING_PROFILES_ACTIVE
-        value: h2
-      - key: SIMULATION_TIME_FACTOR
-        value: "3"
+      - key: TZ
+        value: America/Bogota
+      # Seguridad para un servidor público
+      - key: APP_DEMO_USERS
+        value: "false"
+      - key: APP_SHOW_RESET_TOKEN
+        value: "false"
+      - key: H2_CONSOLE_ENABLED
+        value: "false"
+      - key: APP_REGISTRATION_ENABLED
+        value: "true"
+      # Administrador propietario (secretos: se escriben en el panel de Render)
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_FIRST_NAME
+        sync: false
+      - key: ADMIN_LAST_NAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

@@ -1,5 +1,6 @@
 package com.dronemission.users;
 
+import com.dronemission.users.dto.ApproveUserRequest;
 import com.dronemission.users.dto.UserRequest;
 import com.dronemission.users.dto.UserResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,6 +42,19 @@ public class UserController {
     @PutMapping("/{id}")
     public UserResponse update(@PathVariable Long id, @Valid @RequestBody UserRequest request) {
         return userService.update(id, request);
+    }
+
+    @PostMapping("/{id}/approve")
+    @Operation(summary = "Aprobar una cuenta registrada y asignarle su rol")
+    public UserResponse approve(@PathVariable Long id, @Valid @RequestBody ApproveUserRequest request) {
+        return userService.approve(id, request);
+    }
+
+    @PostMapping("/{id}/reject")
+    @Operation(summary = "Rechazar (eliminar) una cuenta pendiente")
+    public ResponseEntity<Void> reject(@PathVariable Long id) {
+        userService.reject(id);
+        return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")

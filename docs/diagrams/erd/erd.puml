@@ -26,9 +26,12 @@ entity "usuarios" as usuarios {
   --
   * nombre, apellidos : VARCHAR(80)
   * correo : VARCHAR(120) <<UQ>>
+  * nombre_usuario : VARCHAR(30) <<UQ>>
   * contrasena_hash : VARCHAR(100)
   * rol_id : BIGINT <<FK>>
-  * activo : BOOLEAN
+  * activo, pendiente_aprobacion : BOOLEAN
+  * intentos_fallidos : INTEGER
+  bloqueado_hasta : TIMESTAMP
   token_recuperacion, token_expira_en
   ultimo_acceso, creado_en, actualizado_en
 }

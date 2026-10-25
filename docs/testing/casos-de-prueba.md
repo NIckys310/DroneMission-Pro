@@ -2,8 +2,8 @@
 
 | ID | Caso | Datos / pasos | Resultado esperado | Automatizada en |
 |---|---|---|---|---|
-| CP-001 | Login correcto | admin@dronemission.local / Demo2026! | 200, token, rol ADMINISTRADOR | `AuthIntegrationTest.loginOk` |
-| CP-002 | Login incorrecto | contraseña errónea; correo mal escrito | 401 mensaje genérico; 400 `fieldErrors.email` | `AuthIntegrationTest.wrongPassword`, `invalidEmail` |
+| CP-001 | Login correcto (correo o usuario) | admin@dronemission.local / Demo2026! · operador / Demo2026! | 200, token y rol | `AuthIntegrationTest.loginOk`, `loginWithUsername` |
+| CP-002 | Login incorrecto | contraseña errónea; identificador vacío | 401 mensaje genérico; 400 `fieldErrors.identifier` | `AuthIntegrationTest.wrongPassword`, `blankIdentifier` |
 | CP-003 | Acceso sin token | GET /api/auth/me sin cabecera | 401; con token 200 | `AuthIntegrationTest.meRequiresToken` |
 | CP-004 | CRUD de drones | crear sin código → DRN-009; editar; desactivar; serie duplicada | 201 / 200 / 204 / 409 | `DroneCrudIntegrationTest` |
 | CP-005 | CRUD de pilotos | crear con certificación; licencia vencida; licencia duplicada | DISPONIBLE / LICENCIA_VENCIDA / 409 | `PilotCrudIntegrationTest` |
@@ -19,6 +19,10 @@
 | CP-015 | Mantenimiento | registrar y luego iniciar y completar sobre DRN-005 | EN_MANTENIMIENTO → DISPONIBLE, batería 100 % | `MaintenanceAndIncidentIntegrationTest` |
 | CP-016 | Incidentes | piloto registra en su misión; en una ajena; operador resuelve | 201 / 403 / RESUELTO | `MaintenanceAndIncidentIntegrationTest.incidents` |
 | CP-017 | Control de permisos | 13 combinaciones rol × endpoint | 200 o 403 según la matriz | `PermissionIntegrationTest` |
+| CP-019 | Registro y aprobación | registrar `lmejia`; intentar entrar; aprobar como OPERADOR (o PILOTO vinculando ficha); entrar | 201 / 401 pendiente / 200 / 200 | `RegistrationSecurityIntegrationTest.registerApproveLogin`, `approveLinkingPilotFromInactiveAccount` |
+| CP-020 | Validaciones del registro | contraseña `12345678`; usuario repetido; confirmación distinta | 400 / 409 / 400 | `registrationValidations` |
+| CP-021 | Bloqueo por fuerza bruta | 5 contraseñas erróneas y luego la correcta | 401 "Cuenta bloqueada…" | `lockout` |
+| CP-022 | Configuración pública y límite por IP | GET /api/auth/config; 25 logins seguidos | sin datos sensibles; 429 al superar 20/min | `publicConfig` + prueba manual |
 | CP-018 | Alcance de datos | cliente y piloto listan misiones | cliente 3 (sus misiones), piloto 3; misión ajena 403 | `scopedVisibility` |
 
 ## Guion de prueba manual (demo)

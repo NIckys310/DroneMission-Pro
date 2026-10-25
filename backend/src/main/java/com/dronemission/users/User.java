@@ -28,6 +28,10 @@ public class User {
     @Column(name = "correo", nullable = false, unique = true, length = 120)
     private String email;
 
+    /** Nombre de usuario para iniciar sesión (alternativa al correo). */
+    @Column(name = "nombre_usuario", nullable = false, unique = true, length = 30)
+    private String username;
+
     // Nunca se guarda la contraseña: solo su hash BCrypt
     @Column(name = "contrasena_hash", nullable = false, length = 100)
     private String passwordHash;
@@ -38,6 +42,17 @@ public class User {
 
     @Column(name = "activo", nullable = false)
     private boolean active = true;
+
+    /** Cuenta creada por registro público que espera la aprobación de un administrador. */
+    @Column(name = "pendiente_aprobacion", nullable = false)
+    private boolean pendingApproval = false;
+
+    /** Intentos de login fallidos consecutivos (protección contra fuerza bruta). */
+    @Column(name = "intentos_fallidos", nullable = false)
+    private int failedAttempts = 0;
+
+    @Column(name = "bloqueado_hasta")
+    private LocalDateTime lockedUntil;
 
     @Column(name = "token_recuperacion", length = 64)
     private String resetToken;
@@ -67,6 +82,10 @@ public class User {
 
     public String getFullName() {
         return firstName + " " + lastName;
+    }
+
+    public boolean isLocked(LocalDateTime now) {
+        return lockedUntil != null && lockedUntil.isAfter(now);
     }
 
     public boolean hasRole(RoleName roleName) {

@@ -26,3 +26,8 @@
 | RN-22 | Solo el piloto asignado (o el administrador) prepara, despega, pausa y finaliza la misión. | `MissionAccessService.checkExecute` | `MissionFlowIntegrationTest` (403) |
 | RN-23 | Solo se eliminan misiones en BORRADOR; el resto se cancela. | `MissionService.delete` | `MissionFlowIntegrationTest.deleteOnlyDrafts` |
 | RN-24 | Los registros con historial (usuarios, drones, pilotos, clientes) se desactivan en lugar de borrarse. | Servicios `deactivate` | `DroneCrudIntegrationTest.crud` |
+| RN-25 | Una cuenta creada por registro queda inactiva hasta que un administrador la aprueba y le asigna un rol. | `AuthService.register`, `UserService.approve` | `RegistrationSecurityIntegrationTest.registerApproveLogin` |
+| RN-26 | El nombre de usuario y el correo son únicos. | Restricciones UNIQUE + `AuthService.register` | `RegistrationSecurityIntegrationTest.registrationValidations` |
+| RN-27 | Tras 5 intentos fallidos la cuenta se bloquea 15 minutos (aunque luego se use la contraseña correcta). | `AuthService.login` | `RegistrationSecurityIntegrationTest.lockout` |
+| RN-28 | El administrador desbloquea una cuenta asignándole una nueva contraseña. | `UserService.update` | Prueba manual |
+| RN-29 | Al aprobar, se puede vincular la ficha de piloto o cliente de una cuenta desactivada, pero no la de una activa. | `UserService.linkProfiles` | `approveLinkingPilotFromInactiveAccount` |
