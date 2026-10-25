@@ -2,7 +2,7 @@
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 COPY pom.xml .
-RUN mvn -q dependency:go-offline
+RUN mvn -q dependency:go-offline || true   # solo precarga la caché; no debe frenar la construcción
 COPY src ./src
 RUN mvn -q package -DskipTests
 

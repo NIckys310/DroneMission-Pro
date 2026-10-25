@@ -13,7 +13,7 @@ RUN npm run build
 FROM maven:3.9.9-eclipse-temurin-17 AS backend
 WORKDIR /app/backend
 COPY backend/pom.xml ./
-RUN mvn -q dependency:go-offline
+RUN mvn -q dependency:go-offline || true   # solo precarga la caché; no debe frenar la construcción
 COPY backend/src ./src
 COPY --from=frontend /app/frontend/dist ./src/main/resources/static
 RUN mvn -q package -DskipTests
