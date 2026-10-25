@@ -2,6 +2,8 @@
 
 **Sistema de gestión de operaciones y misiones con drones.** Proyecto de la materia *Diseño de Software*: frontend React + TypeScript, backend Spring Boot, base de datos relacional, seguridad JWT con roles, drone virtual con telemetría simulada, reportes PDF, pruebas, diagramas UML y documentación completa.
 
+**🌐 Demo en línea:** https://dronemission-pro.onrender.com — usuarios demo con contraseña `Demo2026!` (la primera visita puede tardar ~1 minuto en despertar el servidor).
+
 ![Dashboard](docs/screenshots/02-dashboard.png)
 
 ---
