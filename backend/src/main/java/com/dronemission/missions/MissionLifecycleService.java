@@ -63,9 +63,7 @@ public class MissionLifecycleService {
     public MissionResponse prepare(Long id) {
         Mission mission = missionService.get(id);
         accessService.checkExecute(mission);
-        if (mission.getStatus() == MissionStatus.CANCELADA) {
-            throw new BusinessRuleException("Una misión cancelada no puede iniciarse");
-        }
+        mission.assertCanTransitionTo(MissionStatus.EN_PREPARACION);
         MissionAssignment assignment = assignmentService.validateReadyForFlight(mission);
         mission.changeStatus(MissionStatus.EN_PREPARACION);
         assignment.getDrone().setStatus(DroneStatus.EN_MISION);

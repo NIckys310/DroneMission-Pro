@@ -1,0 +1,14 @@
+# Configuración para las pruebas: base H2 en memoria, independiente del archivo local.
+spring:
+  datasource:
+    url: jdbc:h2:mem:dronemission-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+app:
+  storage:
+    path: ./target/test-uploads
+  simulation:
+    # El simulador automático queda prácticamente apagado; las pruebas llaman tick() manualmente
+    tick-ms: 3600000
+    # 3600000 ms × 0.002 = 7,2 s de vuelo simulado por cada tick manual
+    time-factor: 0.002

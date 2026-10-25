@@ -116,11 +116,19 @@ public class Mission {
 
     /** Cambia el estado validando la máquina de estados. */
     public void changeStatus(MissionStatus target) {
+        assertCanTransitionTo(target);
+        this.status = target;
+    }
+
+    /** Lanza una excepción si la transición no está permitida (sin cambiar el estado). */
+    public void assertCanTransitionTo(MissionStatus target) {
+        if (status == MissionStatus.CANCELADA) {
+            throw new InvalidStateTransitionException("La misión " + code + " está cancelada: no puede reabrirse ni iniciarse");
+        }
         if (!status.canTransitionTo(target)) {
             throw new InvalidStateTransitionException(
                     "No se puede pasar la misión " + code + " de " + status + " a " + target);
         }
-        this.status = target;
     }
 
     /** Asignación vigente (drone + piloto), si existe. */
