@@ -1,0 +1,17 @@
+# Backend
+backend/target/
+backend/data/
+backend/uploads/
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+
+# Entorno
+.env
+.idea/
+.vscode/
+*.iml
+.DS_Store

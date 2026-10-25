@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="800" viewBox="0 0 600 800">
+  <rect width="600" height="800" fill="#f5f7fa"/>
+  <rect x="40" y="40" width="520" height="720" fill="#ffffff" stroke="#cfd8dc"/>
+  <rect x="40" y="40" width="520" height="70" fill="#0e4b80"/>
+  <text x="60" y="85" fill="#fff" font-family="sans-serif" font-size="24">Informe termográfico T-45</text>
+  <g font-family="sans-serif" font-size="15" fill="#37474f">
+    <text x="60" y="150">Misión: MSN-0001</text><text x="60" y="180">Cliente: Energía del Pacífico E.S.P.</text>
+    <text x="60" y="210">Drone: DRN-001 Halcón I · Piloto: Andrés Torres</text>
+  </g>
+  <g font-family="monospace" font-size="14" fill="#263238">
+    <text x="60" y="270">Elemento          Temp. máx   Estado</text>
+    <text x="60" y="300">Aislador fase A    41.2 °C    Normal</text>
+    <text x="60" y="330">Aislador fase B    68.4 °C    Revisar</text>
+    <text x="60" y="360">Aislador fase C    39.8 °C    Normal</text>
+    <text x="60" y="390">Herraje superior   36.1 °C    Normal</text>
+  </g>
+  <rect x="60" y="430" width="480" height="180" fill="#eceff1"/>
+  <polyline points="70,590 130,560 190,570 250,520 310,470 370,500 430,540 490,530 530,550" fill="none" stroke="#ff7043" stroke-width="3"/>
+  <text x="60" y="740" fill="#ef6c00" font-family="sans-serif" font-size="13">DOCUMENTO DE DEMOSTRACIÓN — datos simulados</text>
+</svg>
