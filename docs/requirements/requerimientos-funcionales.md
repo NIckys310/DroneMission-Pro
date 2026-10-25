@@ -417,6 +417,32 @@ Cada requerimiento está implementado y trazado en la [matriz de trazabilidad](.
 | **Postcondición** | El dueño puede entrar como administrador. |
 | **Caso de uso** | CU-020 |
 
+## RF-034 — Simulador 3D de vuelo
+| Campo | Detalle |
+|---|---|
+| **Código** | RF-034 |
+| **Nombre** | Simulador 3D de vuelo |
+| **Descripción** | Mostrar una simulación 3D realista del drone para practicar misiones (inspección, agricultura, vigilancia, mapeo, entrega, emergencia) o reproducir el plan de vuelo de una misión real, con viento, batería y fallas simuladas. |
+| **Actor** | Todos |
+| **Precondición** | Sesión iniciada. |
+| **Flujo principal** | 1. Abre 'Simulador 3D'.<br>2. Elige un tipo de misión de práctica o una misión real.<br>3. Ajusta altitud, viento y batería inicial.<br>4. Pulsa 'Cargar en el simulador' y luego 'Despegar'.<br>5. El drone recorre los waypoints ejecutando sus acciones (fotos, escaneo, fumigación, video) y regresa a la base. |
+| **Flujo alternativo** | • Batería al 18%: regreso automático a la base.<br>• Falla de señal: el drone queda en espera y regresa.<br>• El usuario pulsa 'Regresar a base' en cualquier momento. |
+| **Postcondición** | Registro del vuelo y resumen del resultado. |
+| **Caso de uso** | CU-021 |
+
+## RF-035 — Instalar como aplicación
+| Campo | Detalle |
+|---|---|
+| **Código** | RF-035 |
+| **Nombre** | Instalar como aplicación |
+| **Descripción** | Permitir instalar el sistema como aplicación (PWA) en computador y celular, con ícono propio y ventana independiente. |
+| **Actor** | Todos |
+| **Precondición** | Navegador compatible (Chrome, Edge o Safari). |
+| **Flujo principal** | 1. Abre el link del sistema.<br>2. Pulsa 'Instalar aplicación' (o el ícono de instalar del navegador).<br>3. El sistema queda como app en el escritorio o la pantalla de inicio. |
+| **Flujo alternativo** | • iPhone: Compartir → 'Agregar a inicio'.<br>• Sin conexión: la app abre pero los datos requieren internet. |
+| **Postcondición** | Aplicación instalada. |
+| **Caso de uso** | CU-021 |
+
 ## RF-030 — Notificaciones
 | Campo | Detalle |
 |---|---|

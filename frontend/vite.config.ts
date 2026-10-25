@@ -14,6 +14,8 @@ export default defineConfig({
     },
   },
   build: {
+    // El simulador 3D (Three.js) pesa ~530 kB y se carga aparte, solo al abrirlo
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         // Separa las librerías grandes en archivos propios (mejor caché del navegador)

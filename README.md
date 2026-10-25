@@ -30,6 +30,8 @@ Diseñar y desarrollar un sistema que permita administrar de forma organizada, s
 - Mantenimiento con cambio automático del estado del drone.
 - Reportes en PDF (misión, drones, pilotos, mantenimiento) e historial.
 - Auditoría y notificaciones (patrón Observer).
+- **Simulador 3D de vuelo** (Three.js): practica misiones o reproduce el plan de una misión real con viento, batería, fallas simuladas y cámaras de seguimiento, cenital o libre.
+- **Instalable como aplicación** (PWA) en Windows, Mac, Android y iPhone.
 
 ## 4. Arquitectura
 
@@ -178,6 +180,29 @@ Detalles:
 - **Crear tu cuenta de administrador:** en Render abre el servicio `dronemission-pro` → **Environment** y escribe `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME` y `ADMIN_PASSWORD` (8+ caracteres con mayúscula, minúscula y número) → **Save, rebuild and deploy**.
 - El plan gratuito "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**. La base de datos gratuita de Render dura 30 días; después se puede recrear o pasar a un plan pago.
 
+## 13.2 Simulador 3D
+
+Menú **Simulador 3D** (todos los roles) o botón **Ver en simulador 3D** en el detalle de una misión.
+
+1. Elige **Práctica** (inspección, agricultura, vigilancia, mapeo, entrega o emergencia) o **Misión real**.
+2. Ajusta la altitud, el viento y la batería inicial → **Cargar en el simulador**.
+3. **Despegar** y observa: el drone sigue los waypoints, toma fotos, escanea, fumiga o graba según la acción de cada punto, y vuelve a la base.
+4. Controles: Pausar (barra espaciadora), Regresar a base (tecla H), velocidad 1×–10×, cámaras y botones de emergencia (batería crítica, ráfaga de viento, pérdida de señal).
+
+La física del vuelo está en `frontend/src/pages/simulator/engine.ts` y la escena 3D en `scene.ts`. El plan de práctica lo genera el backend (`GET /api/simulator/plan`) con las mismas estrategias (patrón Strategy) de las misiones reales.
+
+## 13.3 Instalar como aplicación
+
+Abre https://dronemission-pro.onrender.com y:
+
+| Dispositivo | Pasos |
+|---|---|
+| Windows / Mac (Chrome o Edge) | Botón **Instalar aplicación** del menú lateral o del login, o el ícono ⊕ de la barra de direcciones → Instalar |
+| Android (Chrome) | Menú ⋮ → **Instalar aplicación** (o "Agregar a la pantalla principal") |
+| iPhone / iPad (Safari) | Botón Compartir → **Agregar a inicio** |
+
+La app abre en su propia ventana con el ícono de DroneMission. Necesita internet para los datos (la API nunca se guarda en caché).
+
 ## 14. API
 
 Resumen de endpoints, permisos y formato de errores en [docs/architecture/api-rest.md](docs/architecture/api-rest.md). Documentación interactiva en Swagger UI.
@@ -191,8 +216,8 @@ La presentación con las vistas está en [docs/presentacion/DroneMission-Pro-Vis
 ## 16. Pruebas
 
 ```bash
-cd backend && ./mvnw test     # 89 pruebas: unitarias + integración (H2 en memoria)
-cd frontend && npm test       # 9 pruebas: validaciones y contraseñas seguras
+cd backend && ./mvnw test     # 90 pruebas: unitarias + integración (H2 en memoria)
+cd frontend && npm test       # 15 pruebas: validaciones, contraseñas y motor del simulador
 ```
 Plan y casos de prueba: [docs/testing](docs/testing/plan-de-pruebas.md). Matriz de trazabilidad: [docs/trazabilidad.md](docs/trazabilidad.md).
 

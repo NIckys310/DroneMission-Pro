@@ -16,10 +16,14 @@ import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import AdminPanelSettingsOutlinedIcon from '@mui/icons-material/AdminPanelSettingsOutlined';
 import HistoryOutlinedIcon from '@mui/icons-material/HistoryOutlined';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../auth/AuthContext';
 import { roleName } from '../../utils/labels';
 import NotificationBell from './NotificationBell';
+import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
+import { Button } from '@mui/material';
+import { useInstallPrompt } from '../../hooks/useInstallPrompt';
 
 const DRAWER_WIDTH = 248;
 
@@ -32,6 +36,7 @@ function useNavItems(): NavItem[] {
   return [
     { to: '/', label: 'Inicio', icon: <DashboardOutlinedIcon /> },
     { to: '/missions', label: ownMissions ? 'Mis misiones' : 'Misiones', icon: <FlightTakeoffIcon />, permission: 'MISIONES_VER' },
+    { to: '/simulator', label: 'Simulador 3D', icon: <ViewInArIcon /> },
     { to: '/drones', label: 'Drones', icon: <PrecisionManufacturingOutlinedIcon />, permission: 'DRONES_VER' },
     { to: '/pilots', label: 'Pilotos', icon: <BadgeOutlinedIcon />, permission: 'PILOTOS_VER' },
     { to: '/clients', label: 'Clientes', icon: <BusinessOutlinedIcon />, permission: 'CLIENTES_VER' },
@@ -52,6 +57,7 @@ export default function AppLayout() {
   const { user, can, logout } = useAuth();
   const navigate = useNavigate();
   const items = useNavItems().filter((i) => !i.permission || can(i.permission));
+  const { canInstall, install } = useInstallPrompt();
 
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: '#0b2a47', color: '#d6e4f2' }}>
@@ -94,6 +100,11 @@ export default function AppLayout() {
         <Toolbar sx={{ gap: 1 }}>
           {!isDesktop && <IconButton onClick={() => setMobileOpen(true)} edge="start"><MenuIcon /></IconButton>}
           <Box sx={{ flex: 1 }} />
+          {canInstall && (
+            <Button size="small" variant="outlined" startIcon={<InstallDesktopIcon />} onClick={install} sx={{ mr: 1 }}>
+              Instalar aplicación
+            </Button>
+          )}
           <NotificationBell />
           <Tooltip title="Mi cuenta">
             <IconButton onClick={(e) => setMenuAnchor(e.currentTarget)} sx={{ gap: 1, borderRadius: 2 }}>

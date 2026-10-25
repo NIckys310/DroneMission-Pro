@@ -206,6 +206,19 @@ Después de cambiar una regla, ejecuta `mvnw test`: si alguna prueba falla, actu
 | Cerrar el registro público | `APP_REGISTRATION_ENABLED=false` (el enlace "Crear cuenta" desaparece) |
 | Volver a ver los usuarios demo | `APP_DEMO_USERS=true` (¡nunca en un servidor público!) |
 
+## 8c. Simulador 3D
+
+| Quiero… | Dónde |
+|---|---|
+| Cambiar la velocidad o el consumo de batería del drone | `frontend/src/pages/simulator/engine.ts` (`createState` y `step`) |
+| Cambiar los umbrales de batería (aviso 25 %, regreso 18 %, emergencia 6 %) | constantes al inicio de `engine.ts` |
+| Agregar una falla simulada | `injectFailure` en `engine.ts` y un botón en `SimulatorPage.tsx` |
+| Cambiar el escenario (torre, cultivo, casas, árboles) o el modelo del drone | `frontend/src/pages/simulator/scene.ts` |
+| Cambiar la ruta de práctica de un tipo de misión | la estrategia del tipo en `backend/.../missions/strategy/` (es la misma que usan las misiones reales) |
+| Cambiar la ubicación de la base de práctica | `SimulatorService.java` (coordenadas de Cali) |
+
+Después de cambiar el motor ejecuta `cd frontend && npm test` para revisar que las pruebas del simulador sigan pasando.
+
 ## 9. Cambios visuales rápidos
 
 | Quiero cambiar… | Archivo |
@@ -215,6 +228,7 @@ Después de cambiar una regla, ejecuta `mvnw test`: si alguna prueba falla, actu
 | Opciones del menú lateral | `frontend/src/components/layout/AppLayout.tsx` (`useNavItems`) |
 | Tarjetas y gráficas del dashboard | `frontend/src/pages/home/OpsDashboard.tsx` |
 | Logo | `frontend/public/drone.svg` |
+| Ícono y nombre de la app instalada | `frontend/public/manifest.json` y `frontend/public/icons/` (si cambias archivos, sube la versión `dronemission-v1` en `public/sw.js`) |
 | Datos demo | `backend/src/main/resources/db/migration/V2__datos_iniciales.sql` (y borrar `backend/data/`) |
 
 ---

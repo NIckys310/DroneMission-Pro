@@ -37,4 +37,6 @@ Las pruebas CP-xxx están descritas en [testing/casos-de-prueba.md](testing/caso
 | RF-031 Registrarse | CU-019 | Autenticación | `POST /api/auth/register` | usuarios, notificaciones | CP-019, CP-020 |
 | RF-032 Aprobar o rechazar cuentas | CU-020 | Usuarios | `POST /api/users/{id}/approve, /reject` | usuarios, pilotos, clientes | CP-019 |
 | RF-033 Administrador propietario | CU-020 | Configuración | `(arranque)` | usuarios | CP-022 |
+| RF-034 Simulador 3D de vuelo | CU-021 | Simulador | `GET /api/simulator/plan` | — | CP-023, CP-024 |
+| RF-035 Instalar como aplicación | CU-021 | PWA | `manifest.json, sw.js` | — | CP-025 |
 | RF-030 Notificaciones | CU-011 | Notificaciones | `GET /api/notifications, PATCH /{id}/read` | notificaciones | CP-013 |

@@ -20,6 +20,7 @@ import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternate
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import DownloadIcon from '@mui/icons-material/Download';
+import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import { clientApi, evidenceApi, missionApi } from '../../api/endpoints';
 import { downloadFile, errorMessage } from '../../api/client';
 import { useFetch } from '../../hooks/useFetch';
@@ -110,6 +111,7 @@ export default function MissionDetailPage() {
       {has('EVIDENCE') && <Button startIcon={<AddPhotoAlternateOutlinedIcon />} onClick={() => setDialog('evidence')}>Evidencia</Button>}
       {has('OBSERVE') && <Button startIcon={<NoteAddOutlinedIcon />} onClick={() => setDialog('observe')}>Observación</Button>}
       {has('REPORT') && <Button variant="outlined" startIcon={<PictureAsPdfOutlinedIcon />} onClick={() => downloadFile(`/reports/missions/${id}/pdf`, `reporte-${m.code}.pdf`).catch((e) => notify(errorMessage(e), 'error'))}>Reporte PDF</Button>}
+      <Button startIcon={<ViewInArIcon />} onClick={() => navigate(`/simulator?missionId=${id}`)}>Ver en simulador 3D</Button>
       {has('CANCEL') && <Button color="error" startIcon={<CancelOutlinedIcon />} onClick={() => setDialog('cancel')}>Cancelar misión</Button>}
     </Stack>
   );
@@ -123,7 +125,7 @@ export default function MissionDetailPage() {
       <Card sx={{ mb: 2 }}>
         <CardContent>
           <LifecycleStepper status={m.status} />
-          {m.availableActions.length > 0 && <Box sx={{ mt: 2 }}>{actionButtons}</Box>}
+          <Box sx={{ mt: 2 }}>{actionButtons}</Box>
           {m.status === 'PROGRAMADA' && !has('PREPARE') && m.pilot && can('MISIONES_EJECUTAR') && (
             <Alert severity="info" sx={{ mt: 2 }}>Solo el piloto asignado ({m.pilot.fullName}) puede preparar y despegar esta misión.</Alert>
           )}

@@ -85,3 +85,4 @@ Formato de error común:
 | GET | `/api/notifications` | autenticado | Mis notificaciones |
 | PATCH | `/api/notifications/{id}/read` | autenticado | Marcar como leída |
 | POST | `/api/notifications/read-all` | autenticado | Marcar todas |
+| GET | `/api/simulator/plan?type=&altitudeM=50` | autenticado | Plan de vuelo de práctica para el simulador 3D (no guarda nada) |

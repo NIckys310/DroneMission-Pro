@@ -9,6 +9,8 @@ import { useAuth } from '../auth/AuthContext';
 import { errorMessage } from '../api/client';
 import { authApi } from '../api/endpoints';
 import type { AuthConfig } from '../types';
+import InstallDesktopIcon from '@mui/icons-material/InstallDesktop';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import AuthShell from './AuthShell';
 
 const DEMO_USERS = [
@@ -27,6 +29,7 @@ export default function LoginPage() {
   const [params] = useSearchParams();
   const [identifier, setIdentifier] = useState('');
   const [config, setConfig] = useState<AuthConfig | null>(null);
+  const { canInstall, install } = useInstallPrompt();
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ identifier?: string; password?: string }>({});
@@ -89,6 +92,12 @@ export default function LoginPage() {
           <Button type="submit" variant="contained" size="large" disabled={loading}>{loading ? 'Ingresando…' : 'Ingresar'}</Button>
         </Stack>
       </Box>
+
+      {canInstall && (
+        <Button fullWidth variant="text" startIcon={<InstallDesktopIcon />} onClick={install} sx={{ mt: 2 }}>
+          Instalar DroneMission Pro como aplicación
+        </Button>
+      )}
 
       {config?.registrationEnabled && (
         <Typography variant="body2" sx={{ mt: 3, textAlign: 'center' }}>

@@ -23,6 +23,9 @@
 | CP-020 | Validaciones del registro | contraseña `12345678`; usuario repetido; confirmación distinta | 400 / 409 / 400 | `registrationValidations` |
 | CP-021 | Bloqueo por fuerza bruta | 5 contraseñas erróneas y luego la correcta | 401 "Cuenta bloqueada…" | `lockout` |
 | CP-022 | Configuración pública y límite por IP | GET /api/auth/config; 25 logins seguidos | sin datos sensibles; 429 al superar 20/min | `publicConfig` + prueba manual |
+| CP-023 | Plan de práctica del simulador | GET /api/simulator/plan para cada tipo de misión | 200, waypoints y descripción de la estrategia; sin sesión 401 | `SimulatorIntegrationTest` |
+| CP-024 | Motor del simulador | despegar, recorrer la ruta, batería baja, falla de señal, regreso | fases correctas; RTH automático al 18 % | `engine.test.ts` (frontend) |
+| CP-025 | Instalación como app | abrir en Chrome y revisar Application → Manifest | 0 errores de instalabilidad; service worker registrado | prueba manual |
 | CP-018 | Alcance de datos | cliente y piloto listan misiones | cliente 3 (sus misiones), piloto 3; misión ajena 403 | `scopedVisibility` |
 
 ## Guion de prueba manual (demo)

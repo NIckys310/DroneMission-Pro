@@ -20,8 +20,8 @@ cd frontend && npm test
 
 ## Resultado actual
 
-- Backend: **89 pruebas, 0 fallos** (48 unitarias y 41 de integración).
-- Frontend: **9 pruebas, 0 fallos** (validaciones y contraseñas seguras).
+- Backend: **90 pruebas, 0 fallos** (51 unitarias y 39 de integración).
+- Frontend: **15 pruebas, 0 fallos** (validaciones, contraseñas seguras y 6 del motor del simulador 3D).
 
 | Clase de prueba | Pruebas |
 |---|---|
@@ -39,6 +39,7 @@ cd frontend && npm test
 | MissionFlowIntegrationTest | 5 |
 | MaintenanceAndIncidentIntegrationTest | 3 |
 | PermissionIntegrationTest | 13 |
+| SimulatorIntegrationTest | 1 |
 
 ## Criterios de aceptación
 

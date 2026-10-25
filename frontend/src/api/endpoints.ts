@@ -85,6 +85,10 @@ export const missionApi = {
   addEvidence: (id: number, form: FormData) => data<Evidence>(http.post(`/missions/${id}/evidences`, form)),
 };
 
+export const simulatorApi = {
+  plan: (type: string, altitudeM: number) => data<FlightPlan>(http.get('/simulator/plan', { params: { type, altitudeM } })),
+};
+
 export const evidenceApi = {
   remove: (id: number) => http.delete(`/evidences/${id}`),
 };

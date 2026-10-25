@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './auth/ProtectedRoute';
 import AppLayout from './components/layout/AppLayout';
@@ -20,6 +21,10 @@ import ReportsPage from './pages/reports/ReportsPage';
 import UsersPage from './pages/users/UsersPage';
 import RolesPage from './pages/users/RolesPage';
 import AuditPage from './pages/audit/AuditPage';
+import { Loading } from './components/Feedback';
+
+// El simulador 3D (Three.js) se descarga solo cuando se abre, para que el resto cargue rápido
+const SimulatorPage = lazy(() => import('./pages/simulator/SimulatorPage'));
 
 /** Rutas de la aplicación. Cada ruta exige el mismo permiso que su endpoint en el backend. */
 export default function App() {
@@ -32,6 +37,7 @@ export default function App() {
       <Route element={<ProtectedRoute />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path="/simulator" element={<Suspense fallback={<Loading />}><SimulatorPage /></Suspense>} />
           <Route element={<ProtectedRoute permission="MISIONES_VER" />}>
             <Route path="/missions" element={<MissionsPage />} />
             <Route path="/missions/:id" element={<MissionDetailPage />} />
