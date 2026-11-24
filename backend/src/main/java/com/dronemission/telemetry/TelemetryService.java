@@ -4,7 +4,6 @@ import com.dronemission.missions.Mission;
 import com.dronemission.missions.MissionAccessService;
 import com.dronemission.missions.MissionService;
 import com.dronemission.missions.MissionStatus;
-import com.dronemission.missions.WaypointRepository;
 import com.dronemission.telemetry.dto.TelemetryFeed;
 import com.dronemission.telemetry.dto.TelemetryPoint;
 import com.dronemission.telemetry.dto.TelemetrySummary;
@@ -23,7 +22,6 @@ public class TelemetryService {
             "DATOS SIMULADOS DE DEMOSTRACIÓN: no provienen de un drone real.";
 
     private final TelemetryRepository telemetryRepository;
-    private final WaypointRepository waypointRepository;
     private final MissionService missionService;
     private final MissionAccessService accessService;
 
@@ -32,7 +30,8 @@ public class TelemetryService {
         Mission mission = missionService.get(missionId);
         accessService.checkView(mission);
         List<Telemetry> readings = telemetryRepository.findByMissionIdOrderByIdAsc(missionId);
-        int totalWaypoints = waypointRepository.findByMissionIdOrderBySequenceAsc(missionId).size();
+        // MongoDB: el plan de vuelo viene embebido en la misión
+        int totalWaypoints = mission.getFlightPlan().size();
         boolean routeCompleted = !readings.isEmpty() && readings.get(readings.size() - 1).getCurrentWaypoint() >= totalWaypoints;
         boolean live = mission.getStatus() == MissionStatus.EN_VUELO && !routeCompleted;
         return new TelemetryFeed(true, SIMULATION_NOTICE, mission.getStatus().name(), live, routeCompleted,

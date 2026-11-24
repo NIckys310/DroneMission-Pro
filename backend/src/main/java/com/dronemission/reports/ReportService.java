@@ -149,7 +149,7 @@ public class ReportService {
     @Transactional
     public PdfFile missionPdf(Long missionId) {
         MissionReport report = missionReport(missionId);
-        recordMissionReport(missionRepository.getReferenceById(missionId), currentUserService.getEntity());
+        recordMissionReport(missionRepository.findById(missionId).orElseThrow(() -> new com.dronemission.common.exception.ResourceNotFoundException("Misión", missionId)), currentUserService.getEntity());
         return new PdfFile("reporte-" + report.code() + ".pdf", pdfGenerator.missionReport(report));
     }
 

@@ -3,7 +3,13 @@ package com.dronemission.missions;
 import com.dronemission.clients.Client;
 import com.dronemission.common.exception.InvalidStateTransitionException;
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import com.dronemission.common.persistence.BeforeCreate;
+import com.dronemission.common.persistence.BeforeUpdate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -16,100 +22,101 @@ import java.util.List;
 import java.util.Optional;
 
 /** Misión de vuelo: entidad central del sistema. Se construye con MissionBuilder. */
-@Entity
-@Table(name = "misiones")
+// MongoDB: cada objeto se guarda como un documento en la colección "misiones"
+@Document(collection = "misiones")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Mission {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "codigo", nullable = false, unique = true, length = 20)
+    @Indexed(unique = true)
+    @Field("codigo")
     private String code;
 
-    @Column(name = "nombre", nullable = false, length = 150)
+    @Field("nombre")
     private String name;
 
-    @Column(name = "descripcion", length = 1000)
+    @Field("descripcion")
     private String description;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Field("tipo")
     private MissionType type;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "cliente_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("cliente_id")
     private Client client;
 
-    @Column(name = "ubicacion", nullable = false, length = 200)
+    @Field("ubicacion")
     private String location;
 
-    @Column(name = "latitud", nullable = false)
+    @Field("latitud")
     private Double latitude;
 
-    @Column(name = "longitud", nullable = false)
+    @Field("longitud")
     private Double longitude;
 
-    @Column(name = "altitud_objetivo_m", nullable = false)
+    @Field("altitud_objetivo_m")
     private Integer targetAltitudeM;
 
-    @Column(name = "fecha_programada", nullable = false)
+    @Field("fecha_programada")
     private LocalDate scheduledDate;
 
-    @Column(name = "hora_inicio", nullable = false)
+    @Field("hora_inicio")
     private LocalTime startTime;
 
-    @Column(name = "hora_fin_estimada", nullable = false)
+    @Field("hora_fin_estimada")
     private LocalTime estimatedEndTime;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "prioridad", nullable = false, length = 10)
+    @Field("prioridad")
     private MissionPriority priority;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
+    @Field("estado")
     private MissionStatus status = MissionStatus.BORRADOR;
 
-    @Column(name = "objetivo", nullable = false, length = 500)
+    @Field("objetivo")
     private String objective;
 
-    @Column(name = "observaciones", length = 1000)
+    @Field("observaciones")
     private String observations;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "creado_por")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("creado_por")
     private User createdBy;
 
-    @Column(name = "inicio_real")
+    @Field("inicio_real")
     private LocalDateTime actualStart;
 
-    @Column(name = "fin_real")
+    @Field("fin_real")
     private LocalDateTime actualEnd;
 
-    @OneToMany(mappedBy = "mission")
-    @OrderBy("assignedAt ASC")
+    // Historial de asignaciones (drone + piloto). Cada asignación es un documento de la colección
+    // "asignaciones_mision"; aquí se guarda la lista de referencias en orden de asignación.
+    @DBRef
+    @Field("asignaciones")
     private List<MissionAssignment> assignments = new ArrayList<>();
 
-    @OneToMany(mappedBy = "mission", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("sequence ASC")
+    // Plan de vuelo EMBEBIDO en la misión (composición): los puntos se guardan dentro del mismo documento
+    @Field("plan_vuelo")
     private List<Waypoint> flightPlan = new ArrayList<>();
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
+    @Field("creado_en")
     private LocalDateTime createdAt;
 
-    @Column(name = "actualizado_en", nullable = false)
+    @Field("actualizado_en")
     private LocalDateTime updatedAt;
 
-    @PrePersist
+    // Se ejecuta antes de guardar un documento nuevo (lo llama MongoLifecycleListener)
+    @BeforeCreate
     void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
 
-    @PreUpdate
+    // Se ejecuta antes de actualizar un documento existente (lo llama MongoLifecycleListener)
+    @BeforeUpdate
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
@@ -138,10 +145,8 @@ public class Mission {
 
     public void replaceFlightPlan(List<Waypoint> waypoints) {
         flightPlan.clear();
-        waypoints.forEach(w -> {
-            w.setMission(this);
-            flightPlan.add(w);
-        });
+        // Los puntos van embebidos en la misión, por eso no necesitan referencia a ella
+        flightPlan.addAll(waypoints);
     }
 
     public void appendObservation(String text) {

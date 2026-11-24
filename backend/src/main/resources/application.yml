@@ -1,22 +1,23 @@
 # =====================================================================
 # DroneMission Pro - Configuración del backend
 # Los valores sensibles se leen de variables de entorno (ver .env.example).
-# Perfil por defecto: "h2" (base de datos en archivo, no requiere instalar nada).
-# Para PostgreSQL: SPRING_PROFILES_ACTIVE=postgres
+# Base de datos: MongoDB.
+#  - Perfil por defecto "embedded": el backend arranca su propio MongoDB local
+#    (no requiere instalar nada; los datos demo se cargan al arrancar).
+#  - Perfil "mongo": se conecta a un MongoDB real (local o MongoDB Atlas) con MONGODB_URI.
+#    SPRING_PROFILES_ACTIVE=mongo  MONGODB_URI=mongodb+srv://usuario:clave@cluster/dronemission
 # =====================================================================
 spring:
   application:
     name: dronemission-pro
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:h2}
-  jpa:
-    open-in-view: false
-    hibernate:
-      # "validate": Hibernate comprueba al arrancar que las entidades coinciden con las tablas
-      ddl-auto: validate
-  flyway:
-    enabled: true
-    locations: classpath:db/migration
+    active: ${SPRING_PROFILES_ACTIVE:embedded}
+  data:
+    mongodb:
+      # Nombre de la base de datos dentro del servidor MongoDB
+      database: ${MONGODB_DATABASE:dronemission}
+      # Crea los índices únicos (@Indexed(unique = true)) al arrancar: código de drone, correo, etc.
+      auto-index-creation: true
   servlet:
     multipart:
       max-file-size: 20MB
@@ -76,37 +77,27 @@ logging:
     com.dronemission: INFO
 
 ---
-# Perfil H2: base de datos embebida guardada en ./data (cero instalación)
+# Perfil "embedded": MongoDB embebido (Flapdoodle). La primera vez descarga MongoDB 7.0
+# y lo guarda en la carpeta ~/.embedmongo. Los datos viven mientras el backend esté encendido.
 spring:
   config:
     activate:
-      on-profile: h2
-  datasource:
-    url: jdbc:h2:file:${H2_PATH:./data/dronemission};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;AUTO_SERVER=TRUE
-    username: sa
-    password:
-  h2:
-    console:
-      # Nunca habilitar en un servidor público
-      enabled: ${H2_CONSOLE_ENABLED:true}
-      path: /h2-console
+      on-profile: embedded
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 7.0.14
 
 ---
-# Perfil PostgreSQL
+# Perfil "mongo": servidor MongoDB real (instalado o MongoDB Atlas en la nube)
 spring:
   config:
     activate:
-      on-profile: postgres
-  datasource:
-    # currentSchema: las tablas viven en su propio esquema, así se puede
-    # compartir una base de datos existente sin chocar con otras tablas
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:dronemission}?currentSchema=${DB_SCHEMA:dronemission}
-    username: ${DB_USER:dronemission}
-    password: ${DB_PASSWORD:dronemission}
-  flyway:
-    schemas: ${DB_SCHEMA:dronemission}
-    create-schemas: true
-  jpa:
-    properties:
-      hibernate:
-        default_schema: ${DB_SCHEMA:dronemission}
+      on-profile: mongo
+  autoconfigure:
+    # Apaga el MongoDB embebido: se usa el servidor de MONGODB_URI
+    exclude: de.flapdoodle.embed.mongo.spring.autoconfigure.EmbeddedMongoAutoConfiguration
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/dronemission}

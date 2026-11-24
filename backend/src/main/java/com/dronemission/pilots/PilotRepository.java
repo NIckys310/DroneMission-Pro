@@ -1,12 +1,14 @@
 package com.dronemission.pilots;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
-public interface PilotRepository extends JpaRepository<Pilot, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface PilotRepository extends MongoRepository<Pilot, Long> {
 
     List<Pilot> findAllByOrderByFirstNameAsc();
 
@@ -18,6 +20,8 @@ public interface PilotRepository extends JpaRepository<Pilot, Long> {
 
     long countByActiveTrueAndStatus(PilotStatus status);
 
+    // Rango inclusivo de fechas de vencimiento ("Between" de Mongo excluiría los extremos)
+    @Query("{ 'activo': true, 'vencimiento_licencia': { $gte: ?0, $lte: ?1 } }")
     List<Pilot> findByActiveTrueAndLicenseExpiresOnBetween(LocalDate from, LocalDate to);
 
     boolean existsByDocument(String document);

@@ -158,6 +158,8 @@ public class UserService {
                 throw new BusinessRuleException("El piloto ya está vinculado a otro usuario activo");
             }
             pilot.setUser(user);
+            // MongoDB: se guarda ya, porque la respuesta consulta la ficha por usuario en esta misma operación
+            pilotRepository.save(pilot);
         }
         if (req.role() == RoleName.CLIENTE && req.clientId() != null) {
             Client client = clientRepository.findById(req.clientId())
@@ -166,6 +168,8 @@ public class UserService {
                 throw new BusinessRuleException("El cliente ya está vinculado a otro usuario activo");
             }
             client.setUser(user);
+            // MongoDB: se guarda ya, porque la respuesta consulta la ficha por usuario en esta misma operación
+            clientRepository.save(client);
         }
     }
 

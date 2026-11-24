@@ -1,9 +1,8 @@
-# Configuración para las pruebas: base H2 en memoria, independiente del archivo local.
+# Configuración para las pruebas: MongoDB embebido con una base de datos propia.
 spring:
-  datasource:
-    url: jdbc:h2:mem:dronemission-test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
-    username: sa
-    password:
+  data:
+    mongodb:
+      database: dronemission-test
 app:
   security:
     # Todas las pruebas usan la misma IP: se sube el límite para no bloquear la suite

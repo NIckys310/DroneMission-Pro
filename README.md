@@ -38,8 +38,8 @@ Diseñar y desarrollar un sistema que permita administrar de forma organizada, s
 ```
 React + TypeScript (Vite, MUI)  ──HTTPS/JSON + JWT──►  Spring Boot (API REST)
                                                        Controller → Service → Repository
-                                                                              │ JPA / Flyway
-                                                                   PostgreSQL  o  H2 embebida
+                                                                              │ Spring Data MongoDB
+                                                                   MongoDB (embebido o Atlas)
 ```
 
 Documentada con las vistas de **contexto, funcional, lógica, desarrollo y despliegue**: [docs/architecture/arquitectura.md](docs/architecture/arquitectura.md).
@@ -49,8 +49,8 @@ Documentada con las vistas de **contexto, funcional, lógica, desarrollo y despl
 | Capa | Tecnologías |
 |---|---|
 | Frontend | React 18, TypeScript, Vite, React Router, Material UI, Recharts, Axios, Day.js |
-| Backend | Java 17, Spring Boot 3.3 (Web, Data JPA, Security, Validation), JWT (jjwt), Lombok, OpenPDF, springdoc-openapi |
-| Base de datos | H2 (por defecto, sin instalación) o PostgreSQL 16; migraciones Flyway |
+| Backend | Java 17, Spring Boot 3.3 (Web, Data MongoDB, Security, Validation), JWT (jjwt), Lombok, OpenPDF, springdoc-openapi |
+| Base de datos | MongoDB 7 (embebido por defecto, sin instalación) o MongoDB Atlas; datos demo con `DataSeeder` |
 | Pruebas | JUnit 5, Mockito, Spring Boot Test + MockMvc, Vitest |
 | Diagramas | PlantUML |
 
@@ -60,7 +60,7 @@ Documentada con las vistas de **contexto, funcional, lógica, desarrollo y despl
 |---|---|---|
 | Java JDK | 17 o superior ([Temurin](https://adoptium.net)) | Sí |
 | Node.js | 18 o superior ([nodejs.org](https://nodejs.org), versión LTS) | Sí |
-| PostgreSQL | 14+ | No (se usa H2 por defecto) |
+| MongoDB | 7+ | No (se usa MongoDB embebido por defecto) |
 | Docker | — | No |
 
 No hace falta instalar Maven: el proyecto incluye el *Maven Wrapper* (`mvnw`).
@@ -80,8 +80,8 @@ Toda la configuración tiene valores por defecto para desarrollo. Para cambiarla
 
 | Variable | Por defecto | Descripción |
 |---|---|---|
-| `SPRING_PROFILES_ACTIVE` | `h2` | `h2` (archivo local) o `postgres` |
-| `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD` | localhost, 5432, dronemission, dronemission, dronemission | Conexión PostgreSQL |
+| `SPRING_PROFILES_ACTIVE` | `embedded` | `embedded` (MongoDB embebido) o `mongo` (servidor real) |
+| `MONGODB_URI` | mongodb://localhost:27017/dronemission | Conexión MongoDB (perfil `mongo`) |
 | `JWT_SECRET` | clave de desarrollo | Clave de firma JWT (≥ 32 caracteres). **Cámbiala en producción** |
 | `JWT_EXPIRATION_MINUTES` | 480 | Duración del token |
 | `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME`, `ADMIN_PASSWORD` | vacío | Administrador dueño que se crea al arrancar |
@@ -89,7 +89,6 @@ Toda la configuración tiene valores por defecto para desarrollo. Para cambiarla
 | `APP_DEMO_USERS` | true | `false` desactiva los usuarios demo (nube) |
 | `APP_REGISTRATION_ENABLED` | true | Permite crear cuentas desde el login |
 | `APP_SHOW_RESET_TOKEN` | true | Muestra el token de recuperación simulado (`false` en la nube) |
-| `H2_CONSOLE_ENABLED` | true | Consola web de H2 (`false` en la nube) |
 | `APP_MAX_FAILED_ATTEMPTS` / `APP_LOCK_MINUTES` | 5 / 15 | Bloqueo por intentos fallidos |
 | `APP_AUTH_REQUESTS_PER_MINUTE` | 20 | Límite de intentos por IP |
 | `CORS_ALLOWED_ORIGINS` | http://localhost:5173 | Origen del frontend |
@@ -98,14 +97,9 @@ Toda la configuración tiene valores por defecto para desarrollo. Para cambiarla
 
 ## 10. Base de datos
 
-- **Por defecto (H2):** no instalas nada; la base se crea en `backend/data/` al primer arranque. Flyway ejecuta `V1__esquema_inicial.sql` (tablas en español con PK, FK, UNIQUE, CHECK e índices) y `V2__datos_iniciales.sql` (datos demo). Para reiniciarla, borra `backend/data/`.
-- **PostgreSQL (opcional):**
-  ```sql
-  CREATE USER dronemission WITH PASSWORD 'dronemission';
-  CREATE DATABASE dronemission OWNER dronemission;
-  ```
-  y arranca el backend con `SPRING_PROFILES_ACTIVE=postgres`. Las tablas se crean solas.
-- Copias del script en [`database/schema.sql`](database/schema.sql) y [`database/seed.sql`](database/seed.sql). Diagrama: [ERD](docs/diagrams/png/erd/erd.png).
+- **Por defecto (MongoDB embebido):** no instalas nada. Al arrancar, el backend enciende su propio MongoDB 7 (librería Flapdoodle; la primera vez lo descarga a `~/.embedmongo`) y `DataSeeder` carga los datos demo. Los datos duran mientras el backend esté encendido.
+- **MongoDB real (opcional):** un MongoDB instalado o una base gratuita de MongoDB Atlas. Arranca con `SPRING_PROFILES_ACTIVE=mongo` y `MONGODB_URI=<cadena de conexión>`. Las colecciones se crean solas y, si la base está vacía, se cargan los datos demo.
+- Colecciones (en español): `usuarios`, `roles` (con los permisos embebidos), `permisos`, `clientes`, `pilotos` (con certificaciones embebidas), `drones`, `misiones` (con el plan de vuelo embebido), `asignaciones_mision`, `telemetria`, `evidencias`, `incidentes`, `mantenimientos`, `reportes`, `auditoria`, `notificaciones` y `secuencias` (contadores de IDs).
 
 ## 11. Ejecución del backend
 
@@ -119,7 +113,7 @@ mvnw.cmd spring-boot:run        # Windows
 ```
 La API queda en http://localhost:8080 (Swagger: http://localhost:8080/swagger-ui.html).
 
-Con PostgreSQL (PowerShell): `$env:SPRING_PROFILES_ACTIVE="postgres"; .\mvnw.cmd spring-boot:run`
+Con un MongoDB real (PowerShell): `$env:SPRING_PROFILES_ACTIVE="mongo"; $env:MONGODB_URI="mongodb://localhost:27017/dronemission"; .\mvnw.cmd spring-boot:run`
 
 ## 12. Ejecución del frontend
 
@@ -147,7 +141,7 @@ Abre **http://localhost:5173**. (Arranca primero el backend.)
 | Cifrado | BCrypt (costo 12); nunca se guarda la contraseña |
 | Fuerza bruta | 5 intentos fallidos ⇒ cuenta bloqueada 15 minutos; máx. 20 intentos por minuto por IP (HTTP 429) |
 | Mínimo privilegio | Las cuentas nuevas no tienen permisos hasta ser aprobadas |
-| Servidor público | Usuarios demo desactivados, consola H2 apagada, token de recuperación oculto, JWT con clave generada por Render |
+| Servidor público | Usuarios demo desactivados, token de recuperación oculto, JWT con clave generada por Render |
 | Desbloquear / olvidé mi contraseña | El administrador asigna una nueva contraseña en *Usuarios* (eso también desbloquea). Si el dueño olvida la suya: `ADMIN_RESET_PASSWORD=true` en Render y reiniciar |
 
 ### Usuarios demo (solo en tu computadora)
@@ -177,9 +171,9 @@ En local, la pantalla de login muestra botones que llenan estos datos automátic
 
 Detalles:
 - Un solo servicio sirve frontend y API (misma URL).
-- **Base de datos:** sin configurar nada usa H2 dentro del servidor (los datos vuelven al estado inicial cuando el servicio se duerme; tu cuenta de administrador se recrea sola). Para que las cuentas registradas se guarden para siempre, abre tu PostgreSQL en Render → **Connect** y copia sus datos en las variables `DB_HOST` (Hostname), `DB_PORT` (5432), `DB_NAME` (Database), `DB_USER` (Username) y `DB_PASSWORD` (Password) del servicio. El sistema detecta `DB_HOST` y usa PostgreSQL automáticamente. Las tablas se crean en el esquema `dronemission`, así que puede ser una base que ya uses para otro proyecto (Render solo permite una base gratuita por cuenta).
+- **Base de datos:** sin configurar nada usa un MongoDB embebido dentro del servidor (los datos vuelven al estado inicial cuando el servicio se duerme; tu cuenta de administrador se recrea sola). Para guardar los datos para siempre, crea una base gratuita en MongoDB Atlas y escribe su cadena de conexión en la variable secreta `MONGODB_URI` del servicio: el sistema la detecta y usa el perfil `mongo` automáticamente.
 - **Crear tu cuenta de administrador:** en Render abre el servicio `dronemission-pro` → **Environment** y escribe `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_FIRST_NAME`, `ADMIN_LAST_NAME` y `ADMIN_PASSWORD` (8+ caracteres con mayúscula, minúscula y número) → **Save, rebuild and deploy**.
-- El plan gratuito "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**. La base de datos gratuita de Render dura 30 días; después se puede recrear o pasar a un plan pago.
+- El plan gratuito "se duerme" tras 15 minutos sin uso y la primera visita tarda ~1 minuto en despertar: **ábrelo unos minutos antes de exponer**.
 
 ## 13.2 Simulador 3D
 
@@ -217,7 +211,7 @@ La presentación con las vistas está en [docs/presentacion/DroneMission-Pro-Vis
 ## 16. Pruebas
 
 ```bash
-cd backend && ./mvnw test     # 90 pruebas: unitarias + integración (H2 en memoria)
+cd backend && ./mvnw test     # 90 pruebas: unitarias + integración (MongoDB embebido)
 cd frontend && npm test       # 15 pruebas: validaciones, contraseñas y motor del simulador
 ```
 Plan y casos de prueba: [docs/testing](docs/testing/plan-de-pruebas.md). Matriz de trazabilidad: [docs/trazabilidad.md](docs/trazabilidad.md).
@@ -235,12 +229,11 @@ DroneMission-Pro/
 │   │   ├── config/  common/  auth/  users/  drones/  pilots/  clients/
 │   │   ├── missions/ (strategy/, event/, dto/)  telemetry/  incidents/  evidence/
 │   │   └── maintenance/  reports/  dashboard/  audit/  notifications/
-│   ├── src/main/resources/      application.yml, db/migration (Flyway), static/demo
+│   ├── src/main/resources/      application.yml, static/demo
 │   ├── src/test/                pruebas unitarias e integración
 │   └── pom.xml, mvnw
 ├── frontend/                    React + TypeScript (Vite)
 │   └── src/ api/ auth/ components/ hooks/ pages/ types/ utils/
-├── database/                    schema.sql, seed.sql, migrations/
 ├── docs/
 │   ├── requirements/  use-cases/  architecture/  testing/  reports/  screenshots/  presentacion/
 │   ├── diagrams/ (context, use-case, class, sequence, activity, state, component,

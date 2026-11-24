@@ -9,20 +9,23 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.annotation.Transactional;
+import com.dronemission.config.DataSeeder;
+import com.dronemission.missions.MissionService;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * Base de las pruebas de integración: levanta toda la aplicación con H2 en memoria
- * (con las migraciones y los datos demo) y hace peticiones HTTP reales con MockMvc.
- * @Transactional deshace los cambios de cada prueba.
+ * Base de las pruebas de integración: levanta toda la aplicación con MongoDB embebido
+ * (con los datos demo) y hace peticiones HTTP reales con MockMvc.
+ * Antes de cada prueba la base se borra y se vuelve a llenar, así cada prueba empieza
+ * con los mismos datos (antes lo hacía el rollback de @Transactional con H2).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles({"h2", "test"})
-@Transactional
+@ActiveProfiles({"embedded", "test"})
 abstract class IntegrationTestBase {
 
     protected static final String PASSWORD = "Demo2026!";
@@ -37,6 +40,23 @@ abstract class IntegrationTestBase {
 
     @Autowired
     protected ObjectMapper json;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
+    private DataSeeder dataSeeder;
+
+    @Autowired
+    private MissionService missionService;
+
+    /** Base limpia en cada prueba: se borra la base de pruebas y se cargan los datos demo otra vez. */
+    @BeforeEach
+    void resetDatabase() {
+        mongoTemplate.getDb().drop();
+        dataSeeder.seed();
+        missionService.ensureFlightPlans();
+    }
 
     protected String token(String email) throws Exception {
         String body = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)

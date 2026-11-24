@@ -1,12 +1,18 @@
 package com.dronemission.reports;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface ReportRepository extends JpaRepository<Report, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface ReportRepository extends MongoRepository<Report, Long> {
 
     List<Report> findAllByOrderByGeneratedAtDesc();
 
-    List<Report> findByMissionClientIdOrderByGeneratedAtDesc(Long clientId);
+    // MongoDB no cruza report -> misión -> cliente en una sola consulta: se filtra en Java
+    default List<Report> findByMissionClientIdOrderByGeneratedAtDesc(Long clientId) {
+        return findAllByOrderByGeneratedAtDesc().stream()
+                .filter(r -> r.getMission() != null && clientId.equals(r.getMission().getClient().getId()))
+                .toList();
+    }
 }

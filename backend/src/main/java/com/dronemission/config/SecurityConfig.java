@@ -49,12 +49,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .headers(h -> h.frameOptions(f -> f.sameOrigin())) // necesario para la consola H2
+                .headers(h -> h.frameOptions(f -> f.sameOrigin())) // permite mostrar páginas propias dentro de un iframe
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/config",
                                 "/api/auth/forgot-password", "/api/auth/reset-password").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers("/demo/**", "/h2-console/**", "/error").permitAll()
+                        .requestMatchers("/demo/**", "/error").permitAll()
                         // Toda la API exige token; el resto son archivos del frontend (cuando se sirve desde el backend)
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll())

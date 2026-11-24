@@ -1,12 +1,10 @@
 # =====================================================================
 # Blueprint de Render: DroneMission Pro (frontend + backend en un servicio)
 #
-# Base de datos: Render permite UNA sola PostgreSQL gratuita por cuenta, así
-# que no se crea aquí. Sin DB_HOST se usa H2 interna (se reinicia al dormir).
-# Para guardar las cuentas de forma permanente escribe en el panel los datos
-# de tu PostgreSQL (DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASSWORD). Las
-# tablas se crean en el esquema "dronemission", así que puede ser una base
-# que ya uses para otra cosa.
+# Base de datos: MongoDB. Crea una base gratuita en MongoDB Atlas y escribe
+# su cadena de conexión en el panel de Render como MONGODB_URI (secreta).
+# Sin MONGODB_URI se usa un MongoDB embebido dentro del servidor (los datos
+# vuelven al estado inicial cuando el servicio se duerme).
 #
 # Las variables ADMIN_* son SECRETAS (sync: false): Render las pide en su
 # panel y NUNCA quedan guardadas en GitHub.
@@ -19,18 +17,8 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /
     envVars:
-      # El Dockerfile elige postgres automáticamente si DB_HOST tiene valor
-      - key: SPRING_PROFILES_ACTIVE
-        value: h2
-      - key: DB_HOST
-        sync: false
-      - key: DB_PORT
-        sync: false
-      - key: DB_NAME
-        sync: false
-      - key: DB_USER
-        sync: false
-      - key: DB_PASSWORD
+      # El Dockerfile usa el perfil "mongo" si MONGODB_URI tiene valor; si no, "embedded"
+      - key: MONGODB_URI
         sync: false
       - key: JWT_SECRET
         generateValue: true
@@ -40,8 +28,6 @@ services:
       - key: APP_DEMO_USERS
         value: "false"
       - key: APP_SHOW_RESET_TOKEN
-        value: "false"
-      - key: H2_CONSOLE_ENABLED
         value: "false"
       - key: APP_REGISTRATION_ENABLED
         value: "true"

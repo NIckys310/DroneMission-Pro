@@ -1,0 +1,3927 @@
+{
+  "info": {
+    "name": "DroneMission Pro API",
+    "description": "Colección para probar la API de DroneMission Pro (backend Spring Boot + MongoDB).\n\n1. Enciende el backend (mvnw spring-boot:run). Queda en http://localhost:8080.\n2. Abre la carpeta «1. Flujo de demostración» y ejecuta las peticiones en orden (o usa Run collection).\n3. El login guarda el token solo; las demás peticiones lo usan.\n\nVariables: baseUrl (dirección del backend) y password (contraseña de los usuarios demo).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fecha de hoy (AAAA-MM-DD) para crear misiones y mantenimientos",
+          "const d = new Date(); const p = n => String(n).padStart(2, '0');",
+          "pm.collectionVariables.set('hoy', `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`);"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "password",
+      "value": "Demo2026!"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "tokenPiloto",
+      "value": ""
+    },
+    {
+      "key": "tokenCliente",
+      "value": ""
+    },
+    {
+      "key": "hoy",
+      "value": ""
+    },
+    {
+      "key": "droneId",
+      "value": ""
+    },
+    {
+      "key": "missionId",
+      "value": ""
+    },
+    {
+      "key": "incidentId",
+      "value": ""
+    },
+    {
+      "key": "pilotId",
+      "value": ""
+    },
+    {
+      "key": "clientId",
+      "value": ""
+    },
+    {
+      "key": "maintenanceId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Flujo de demostración (en orden)",
+      "description": "Una misión completa de principio a fin. Ejecútalas en orden.",
+      "item": [
+        {
+          "name": "1. Login como administrador",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('token', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Inicia sesión y GUARDA el token en la variable {{token}}. Todas las peticiones siguientes lo usan solas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"admin\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "2. Login como piloto (piloto2)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenPiloto', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "El piloto es quien prepara, inicia y finaliza el vuelo. Su token queda en {{tokenPiloto}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"piloto2\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "3. Ver el dashboard",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "dashboard"
+              ]
+            },
+            "description": "Los números de la pantalla de inicio: drones, pilotos, misiones por estado y alertas."
+          }
+        },
+        {
+          "name": "4. Crear un drone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('droneId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drones"
+              ]
+            },
+            "description": "Crea un drone de inspección. La DroneFactory llena la batería, velocidad y autonomía según el tipo, y le da el código DRN-xxx. Guarda su id en {{droneId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Halcón Postman\",\n  \"manufacturer\": \"DJI\",\n  \"model\": \"Mavic 3 Enterprise\",\n  \"serialNumber\": \"PM-{{$timestamp}}\",\n  \"type\": \"INSPECCION\",\n  \"acquiredOn\": \"{{hoy}}\",\n  \"description\": \"Creado desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "5. Crear una misión (queda en BORRADOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('missionId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions"
+              ]
+            },
+            "description": "El MissionBuilder valida los datos y la estrategia genera el plan de vuelo. Guarda su id en {{missionId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Inspección de prueba Postman\",\n  \"description\": \"Misión creada desde Postman\",\n  \"type\": \"INSPECCION\",\n  \"clientId\": 2,\n  \"location\": \"Subestación Acopi, Yumbo\",\n  \"latitude\": 3.5513,\n  \"longitude\": -76.4876,\n  \"targetAltitudeM\": 60,\n  \"scheduledDate\": \"{{hoy}}\",\n  \"startTime\": \"22:00\",\n  \"estimatedEndTime\": \"23:00\",\n  \"priority\": \"ALTA\",\n  \"objective\": \"Revisar aisladores y herrajes\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "6. Enviar la misión (PENDIENTE)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "submit"
+              ]
+            },
+            "description": "BORRADOR → PENDIENTE (patrón State)."
+          }
+        },
+        {
+          "name": "7. Ver drones y pilotos disponibles",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/assignment-options",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "assignment-options"
+              ]
+            },
+            "description": "Muestra cuáles drones y pilotos sirven para esta misión y por qué los demás no (batería, tipo, mantenimiento, horario, licencia)."
+          }
+        },
+        {
+          "name": "8. Asignar drone y piloto (PROGRAMADA)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "assign"
+              ]
+            },
+            "description": "Asigna el drone creado en el paso 4 y a la piloto Valentina (id 2).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"droneId\": \"{{droneId}}\",\n  \"pilotId\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "9. Ver el plan de vuelo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/flight-plan",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "flight-plan"
+              ]
+            },
+            "description": "Los puntos de ruta (waypoints) que generó la estrategia de inspección."
+          }
+        },
+        {
+          "name": "10. Preparar (chequeo prevuelo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/prepare",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "prepare"
+              ]
+            },
+            "description": "PROGRAMADA → EN_PREPARACION. Lo hace la piloto.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPiloto}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "11. Iniciar el vuelo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/start",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "start"
+              ]
+            },
+            "description": "EN_PREPARACION → EN_VUELO. El simulador empieza a mover el drone virtual.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPiloto}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "12. Ver la telemetría en vivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/telemetry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "telemetry"
+              ]
+            },
+            "description": "Las lecturas del drone virtual (posición, altitud, batería). Envíala varias veces: cada 2 segundos hay una lectura nueva.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPiloto}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "13. Registrar un incidente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('incidentId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/incidents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "incidents"
+              ]
+            },
+            "description": "Un incidente leve. Si la severidad fuera CRITICA, la misión se pausaría sola.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CLIMA\",\n  \"severity\": \"BAJA\",\n  \"description\": \"Ráfagas de viento de 15 km/h\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPiloto}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "14. Finalizar la misión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/{{missionId}}/finish",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "{{missionId}}",
+                "finish"
+              ]
+            },
+            "description": "EN_VUELO → FINALIZADA. Suma horas de vuelo, libera drone y piloto y genera el reporte.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenPiloto}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "15. Ver el reporte de la misión",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/missions/{{missionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "missions",
+                "{{missionId}}"
+              ]
+            },
+            "description": "El resumen del vuelo en JSON."
+          }
+        },
+        {
+          "name": "16. Descargar el reporte en PDF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/missions/{{missionId}}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "missions",
+                "{{missionId}}",
+                "pdf"
+              ]
+            },
+            "description": "Devuelve un PDF. En Postman usa «Send and Download» para guardarlo."
+          }
+        },
+        {
+          "name": "17. Ver la auditoría",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/audit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "audit"
+              ]
+            },
+            "description": "La bitácora: aquí aparece todo lo que hiciste en los pasos anteriores (patrón Observer)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Pruebas de errores y seguridad",
+      "description": "Cada petición debe FALLAR con el código indicado: así se ve que las reglas funcionan.",
+      "item": [
+        {
+          "name": "Contraseña incorrecta → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Prueba el manejo de errores: responde 401 con un mensaje en JSON.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"operador\",\n  \"password\": \"ClaveMala123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Sin token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/drones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drones"
+              ]
+            },
+            "description": "Sin el header Authorization, el filtro JWT no deja pasar.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Login como cliente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenCliente', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Guarda el token del cliente en {{tokenCliente}} para la siguiente prueba.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"identifier\": \"cliente\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Cliente intenta crear un drone → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/drones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "drones"
+              ]
+            },
+            "description": "El rol CLIENTE no tiene el permiso DRONES_GESTIONAR (@PreAuthorize).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Halcón Postman\",\n  \"manufacturer\": \"DJI\",\n  \"model\": \"Mavic 3 Enterprise\",\n  \"serialNumber\": \"PM-{{$timestamp}}\",\n  \"type\": \"INSPECCION\",\n  \"acquiredOn\": \"{{hoy}}\",\n  \"description\": \"Creado desde Postman\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenCliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Altitud de 200 m → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions"
+              ]
+            },
+            "description": "La validación rechaza altitudes mayores a 120 m (límite legal).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Inspección de prueba Postman\",\n  \"description\": \"Misión creada desde Postman\",\n  \"type\": \"INSPECCION\",\n  \"clientId\": 2,\n  \"location\": \"Subestación Acopi, Yumbo\",\n  \"latitude\": 3.5513,\n  \"longitude\": -76.4876,\n  \"targetAltitudeM\": 200,\n  \"scheduledDate\": \"{{hoy}}\",\n  \"startTime\": \"22:00\",\n  \"estimatedEndTime\": \"23:00\",\n  \"priority\": \"ALTA\",\n  \"objective\": \"Revisar aisladores y herrajes\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Drone en mantenimiento → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/3/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "3",
+                "assign"
+              ]
+            },
+            "description": "DRN-004 (id 4) está EN_MANTENIMIENTO: la regla de asignación lo rechaza con un mensaje claro.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"droneId\": 4,\n  \"pilotId\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Misión que no existe → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/missions/9999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "missions",
+                "9999"
+              ]
+            },
+            "description": "Responde 404: «Misión 9999 no encontrada»."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Todos los endpoints por módulo",
+      "description": "Referencia completa. Primero haz el Login de esta carpeta o de la carpeta 1.",
+      "item": [
+        {
+          "name": "Autenticación",
+          "item": [
+            {
+              "name": "Login (administrador)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('token', pm.response.json().token);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "Con usuario o correo. Usuarios demo: admin, operador, piloto, piloto2, tecnico, cliente. El administrador puede usar todos los endpoints.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifier\": \"admin\",\n  \"password\": \"{{password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              }
+            },
+            {
+              "name": "Login (piloto Andrés)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('tokenPiloto', pm.response.json().token);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "login"
+                  ]
+                },
+                "description": "El piloto asignado a la misión MSN-0003; se usa para prepararla, iniciarla y finalizarla.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"identifier\": \"piloto\",\n  \"password\": \"{{password}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              }
+            },
+            {
+              "name": "Mi usuario",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/me",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "me"
+                  ]
+                },
+                "description": "Quién soy, mi rol y mis permisos."
+              }
+            },
+            {
+              "name": "Configuración pública",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/config",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "config"
+                  ]
+                },
+                "description": "Si el registro está habilitado, etc.",
+                "auth": {
+                  "type": "noauth"
+                }
+              }
+            },
+            {
+              "name": "Registrarse",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/register",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "register"
+                  ]
+                },
+                "description": "Crea una cuenta que queda PENDIENTE hasta que un administrador la apruebe.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Ana\",\n  \"lastName\": \"Prueba\",\n  \"username\": \"ana{{$timestamp}}\",\n  \"email\": \"ana{{$timestamp}}@correo.example\",\n  \"password\": \"Vuelo2026Seguro\",\n  \"confirmPassword\": \"Vuelo2026Seguro\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              }
+            },
+            {
+              "name": "Olvidé mi contraseña",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/forgot-password",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "forgot-password"
+                  ]
+                },
+                "description": "Genera un token de recuperación (en la demo se muestra en pantalla).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"operador@dronemission.local\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "noauth"
+                }
+              }
+            },
+            {
+              "name": "Cerrar sesión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/logout",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "auth",
+                    "logout"
+                  ]
+                },
+                "description": "Registra el cierre de sesión en la auditoría."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Drones",
+          "item": [
+            {
+              "name": "Listar drones",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones"
+                  ]
+                },
+                "description": "Toda la flota."
+              }
+            },
+            {
+              "name": "Ver un drone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Detalle de un drone."
+              }
+            },
+            {
+              "name": "Historial de un drone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones/:id/history",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones",
+                    ":id",
+                    "history"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Misiones y mantenimientos del drone."
+              }
+            },
+            {
+              "name": "Crear drone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('droneId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones"
+                  ]
+                },
+                "description": "Solo ADMINISTRADOR (DRONES_GESTIONAR).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Halcón Postman\",\n  \"manufacturer\": \"DJI\",\n  \"model\": \"Mavic 3 Enterprise\",\n  \"serialNumber\": \"PM-{{$timestamp}}\",\n  \"type\": \"INSPECCION\",\n  \"acquiredOn\": \"{{hoy}}\",\n  \"description\": \"Creado desde Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Editar drone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{droneId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Cambia los datos de un drone.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Halcón Postman (editado)\",\n  \"manufacturer\": \"DJI\",\n  \"model\": \"Mavic 3 Enterprise\",\n  \"serialNumber\": \"PM-EDIT-{{$timestamp}}\",\n  \"type\": \"INSPECCION\",\n  \"acquiredOn\": \"{{hoy}}\",\n  \"description\": \"Creado desde Postman\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Cambiar estado técnico",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "5",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "DISPONIBLE, FUERA_DE_SERVICIO…",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"DISPONIBLE\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Cargar batería",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones/:id/charge",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones",
+                    ":id",
+                    "charge"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "7",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Pone la batería al 100 %."
+              }
+            },
+            {
+              "name": "Desactivar drone",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/drones/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "drones",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{droneId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Desactivación lógica (no se borra)."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pilotos",
+          "item": [
+            {
+              "name": "Listar pilotos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/pilots",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "pilots"
+                  ]
+                },
+                "description": "Todos los pilotos."
+              }
+            },
+            {
+              "name": "Ver un piloto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/pilots/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "pilots",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Detalle con certificaciones."
+              }
+            },
+            {
+              "name": "Misiones de un piloto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/pilots/:id/missions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "pilots",
+                    ":id",
+                    "missions"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Las misiones asignadas."
+              }
+            },
+            {
+              "name": "Crear piloto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('pilotId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/pilots",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "pilots"
+                  ]
+                },
+                "description": "Con su licencia y certificaciones (se guardan embebidas en MongoDB).",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Laura\",\n  \"lastName\": \"Postman Díaz\",\n  \"document\": \"PM{{$timestamp}}\",\n  \"email\": \"laura{{$timestamp}}@correo.example\",\n  \"phone\": \"310 555 2020\",\n  \"licenseNumber\": \"UAEAC-RPA-{{$timestamp}}\",\n  \"licenseExpiresOn\": \"2030-12-31\",\n  \"flightHours\": 10,\n  \"certifications\": [\n    {\n      \"name\": \"Operación RPAS\",\n      \"issuer\": \"Aerocivil\",\n      \"issuedOn\": \"2025-01-15\",\n      \"expiresOn\": \"2030-01-15\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Editar piloto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/pilots/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "pilots",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{pilotId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Cambia los datos del piloto.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Laura\",\n  \"lastName\": \"Postman Díaz\",\n  \"document\": \"PM-E{{$timestamp}}\",\n  \"email\": \"edit{{$timestamp}}@correo.example\",\n  \"phone\": \"310 555 2020\",\n  \"licenseNumber\": \"UAEAC-E-{{$timestamp}}\",\n  \"licenseExpiresOn\": \"2030-12-31\",\n  \"flightHours\": 10,\n  \"certifications\": [\n    {\n      \"name\": \"Operación RPAS\",\n      \"issuer\": \"Aerocivil\",\n      \"issuedOn\": \"2025-01-15\",\n      \"expiresOn\": \"2030-01-15\"\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Desactivar piloto",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/pilots/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "pilots",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{pilotId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Desactivación lógica."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Clientes",
+          "item": [
+            {
+              "name": "Listar clientes",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/clients",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clients"
+                  ]
+                },
+                "description": "Todos los clientes."
+              }
+            },
+            {
+              "name": "Ver un cliente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/clients/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clients",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Detalle."
+              }
+            },
+            {
+              "name": "Crear cliente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('clientId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/clients",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clients"
+                  ]
+                },
+                "description": "Persona o empresa.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"EMPRESA\",\n  \"name\": \"Cliente Postman S.A.S.\",\n  \"document\": \"NIT-{{$timestamp}}\",\n  \"email\": \"contacto@cliente.example\",\n  \"phone\": \"602 555 3030\",\n  \"address\": \"Calle 5 # 10-20\",\n  \"city\": \"Cali\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Editar cliente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/clients/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clients",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{clientId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Cambia los datos del cliente.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"EMPRESA\",\n  \"name\": \"Cliente Postman (editado)\",\n  \"document\": \"NIT-E{{$timestamp}}\",\n  \"email\": \"contacto@cliente.example\",\n  \"phone\": \"602 555 3030\",\n  \"address\": \"Calle 5 # 10-20\",\n  \"city\": \"Cali\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Desactivar cliente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/clients/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "clients",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{clientId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "No se puede si tiene misiones abiertas."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Misiones",
+          "item": [
+            {
+              "name": "Listar misiones",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions"
+                  ]
+                },
+                "description": "Todas (el piloto y el cliente solo ven las suyas)."
+              }
+            },
+            {
+              "name": "Ver una misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Detalle con availableActions (los botones posibles)."
+              }
+            },
+            {
+              "name": "Crear misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('missionId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions"
+                  ]
+                },
+                "description": "Queda en BORRADOR.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Inspección de prueba Postman\",\n  \"description\": \"Misión creada desde Postman\",\n  \"type\": \"INSPECCION\",\n  \"clientId\": 2,\n  \"location\": \"Subestación Acopi, Yumbo\",\n  \"latitude\": 3.5513,\n  \"longitude\": -76.4876,\n  \"targetAltitudeM\": 60,\n  \"scheduledDate\": \"{{hoy}}\",\n  \"startTime\": \"22:00\",\n  \"estimatedEndTime\": \"23:00\",\n  \"priority\": \"ALTA\",\n  \"objective\": \"Revisar aisladores y herrajes\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Editar misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{missionId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Solo en BORRADOR o PENDIENTE.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Inspección Postman (editada)\",\n  \"description\": \"Misión creada desde Postman\",\n  \"type\": \"INSPECCION\",\n  \"clientId\": 2,\n  \"location\": \"Subestación Acopi, Yumbo\",\n  \"latitude\": 3.5513,\n  \"longitude\": -76.4876,\n  \"targetAltitudeM\": 60,\n  \"scheduledDate\": \"{{hoy}}\",\n  \"startTime\": \"22:00\",\n  \"estimatedEndTime\": \"23:00\",\n  \"priority\": \"ALTA\",\n  \"objective\": \"Revisar aisladores y herrajes\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Plan de vuelo",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/flight-plan",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "flight-plan"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Waypoints generados por la estrategia."
+              }
+            },
+            {
+              "name": "Historial de la misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/history",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "history"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "La auditoría de esa misión."
+              }
+            },
+            {
+              "name": "Agregar observación",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/observations",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "observations"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Nota de texto.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"text\": \"Revisar el viento antes de despegar\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Enviar (submit)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/submit",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "submit"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "6",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "BORRADOR → PENDIENTE."
+              }
+            },
+            {
+              "name": "Opciones de asignación",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/assignment-options",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "assignment-options"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "5",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Drones y pilotos aptos y no aptos."
+              }
+            },
+            {
+              "name": "Asignar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/assign",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "assign"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "5",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "PENDIENTE → PROGRAMADA.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"droneId\": 1,\n  \"pilotId\": 1\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Cancelar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "8",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Con motivo obligatorio.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"El cliente pidió cancelar\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Preparar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/prepare",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "prepare"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "PROGRAMADA → EN_PREPARACION (rol piloto).",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{tokenPiloto}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Iniciar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/start",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "start"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "→ EN_VUELO.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{tokenPiloto}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Registrar incidente en vuelo",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:missionId/incidents",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":missionId",
+                    "incidents"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Solo en misiones en preparación, en vuelo o pausadas.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"OBSTACULO\",\n  \"severity\": \"MEDIA\",\n  \"description\": \"Ave cerca del drone\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{tokenPiloto}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Pausar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/pause",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "pause"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "EN_VUELO → PAUSADA.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{tokenPiloto}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Reanudar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/resume",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "resume"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "PAUSADA → EN_VUELO.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{tokenPiloto}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Finalizar",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id/finish",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id",
+                    "finish"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "→ FINALIZADA.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{tokenPiloto}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "Eliminar misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 204', () => pm.response.to.have.status(204));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{missionId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Solo misiones en BORRADOR (borra la creada arriba)."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Telemetría y simulador",
+          "item": [
+            {
+              "name": "Telemetría de una misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:missionId/telemetry",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":missionId",
+                    "telemetry"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Lecturas del drone virtual."
+              }
+            },
+            {
+              "name": "Plan de práctica del simulador",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/simulator/plan?type=AGRICULTURA&altitudeM=40",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "simulator",
+                    "plan"
+                  ],
+                  "query": [
+                    {
+                      "key": "type",
+                      "value": "AGRICULTURA"
+                    },
+                    {
+                      "key": "altitudeM",
+                      "value": "40"
+                    }
+                  ]
+                },
+                "description": "Ruta de práctica del simulador 3D. Cambia type (INSPECCION, AGRICULTURA, VIGILANCIA, TOPOGRAFIA…) en la pestaña Params."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Incidentes y evidencias",
+          "item": [
+            {
+              "name": "Listar incidentes",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/incidents",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "incidents"
+                  ]
+                },
+                "description": "Todos los incidentes."
+              }
+            },
+            {
+              "name": "Incidentes de una misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:missionId/incidents",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":missionId",
+                    "incidents"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "2",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Los de esa misión."
+              }
+            },
+            {
+              "name": "Cambiar estado del incidente",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/incidents/:id/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "incidents",
+                    ":id",
+                    "status"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "4",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "ABIERTO → EN_REVISION → RESUELTO.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"RESUELTO\",\n  \"resolution\": \"Se reanudó el vuelo sin problema\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Evidencias de una misión",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:missionId/evidences",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":missionId",
+                    "evidences"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Fotos, documentos y observaciones."
+              }
+            },
+            {
+              "name": "Registrar evidencia con URL",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/missions/:missionId/evidences",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "missions",
+                    ":missionId",
+                    "evidences"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Para subir un archivo usa Body → form-data con el campo «file».",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"type\": \"OBSERVACION\",\n  \"name\": \"Nota del piloto\",\n  \"description\": \"Todo en orden\",\n  \"visibleToClient\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mantenimiento",
+          "item": [
+            {
+              "name": "Listar mantenimientos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/maintenance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "maintenance"
+                  ]
+                },
+                "description": "Todos."
+              }
+            },
+            {
+              "name": "Ver un mantenimiento",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/maintenance/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "maintenance",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Detalle."
+              }
+            },
+            {
+              "name": "Programar mantenimiento",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.collectionVariables.set('maintenanceId', pm.response.json().id);"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/maintenance",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "maintenance"
+                  ]
+                },
+                "description": "Para el drone 5.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"droneId\": 5,\n  \"type\": \"PREVENTIVO\",\n  \"date\": \"{{hoy}}\",\n  \"description\": \"Revisión de hélices y firmware\",\n  \"cost\": 150000,\n  \"observations\": \"Creado desde Postman\",\n  \"startNow\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Iniciar mantenimiento",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/maintenance/:id/start",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "maintenance",
+                    ":id",
+                    "start"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{maintenanceId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "El drone pasa a EN_MANTENIMIENTO."
+              }
+            },
+            {
+              "name": "Completar mantenimiento",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/maintenance/:id/complete",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "maintenance",
+                    ":id",
+                    "complete"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "{{maintenanceId}}",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "El drone vuelve a DISPONIBLE.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"finalCost\": 160000,\n  \"observations\": \"Listo\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "Cancelar mantenimiento",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/maintenance/:id/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "maintenance",
+                    ":id",
+                    "cancel"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "3",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Solo si no se ha completado."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reportes y dashboard",
+          "item": [
+            {
+              "name": "Dashboard",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/dashboard",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "dashboard"
+                  ]
+                },
+                "description": "Indicadores del inicio."
+              }
+            },
+            {
+              "name": "Historial de reportes",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "reports"
+                  ]
+                },
+                "description": "Reportes generados."
+              }
+            },
+            {
+              "name": "Reporte de misión (JSON)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports/missions/:missionId",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "reports",
+                    "missions",
+                    ":missionId"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Resumen."
+              }
+            },
+            {
+              "name": "Reporte de misión (PDF)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports/missions/:missionId/pdf",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "reports",
+                    "missions",
+                    ":missionId",
+                    "pdf"
+                  ],
+                  "variable": [
+                    {
+                      "key": "missionId",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Usa «Send and Download»."
+              }
+            },
+            {
+              "name": "Reporte de drones (PDF)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports/drones/pdf",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "reports",
+                    "drones",
+                    "pdf"
+                  ]
+                },
+                "description": "Toda la flota."
+              }
+            },
+            {
+              "name": "Reporte de pilotos (PDF)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports/pilots/pdf",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "reports",
+                    "pilots",
+                    "pdf"
+                  ]
+                },
+                "description": "Todos los pilotos."
+              }
+            },
+            {
+              "name": "Reporte de mantenimiento (PDF)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/reports/maintenance/pdf",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "reports",
+                    "maintenance",
+                    "pdf"
+                  ]
+                },
+                "description": "Todos los mantenimientos."
+              }
+            }
+          ]
+        },
+        {
+          "name": "Usuarios, roles y auditoría",
+          "item": [
+            {
+              "name": "Listar usuarios",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/users",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "users"
+                  ]
+                },
+                "description": "Solo ADMINISTRADOR."
+              }
+            },
+            {
+              "name": "Ver un usuario",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/users/:id",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "users",
+                    ":id"
+                  ],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "1",
+                      "description": "Número del registro"
+                    }
+                  ]
+                },
+                "description": "Detalle."
+              }
+            },
+            {
+              "name": "Listar roles",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/roles",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "roles"
+                  ]
+                },
+                "description": "Los 5 roles con sus permisos."
+              }
+            },
+            {
+              "name": "Listar permisos",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/permissions",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "permissions"
+                  ]
+                },
+                "description": "Los 22 permisos."
+              }
+            },
+            {
+              "name": "Notificaciones",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notifications",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notifications"
+                  ]
+                },
+                "description": "Las de la campanita del usuario actual."
+              }
+            },
+            {
+              "name": "Notificaciones sin leer",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/notifications/unread-count",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "notifications",
+                    "unread-count"
+                  ]
+                },
+                "description": "Cuántas hay sin leer."
+              }
+            },
+            {
+              "name": "Auditoría",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/audit",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "audit"
+                  ]
+                },
+                "description": "Bitácora de acciones."
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

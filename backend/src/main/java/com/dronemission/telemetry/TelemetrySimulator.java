@@ -42,20 +42,18 @@ public class TelemetrySimulator {
     private static final double AMBIENT_TEMPERATURE_C = 24.0;
 
     private final MissionRepository missionRepository;
-    private final WaypointRepository waypointRepository;
     private final TelemetryRepository telemetryRepository;
     private final MissionStrategyResolver strategyResolver;
     private final IncidentService incidentService;
     private final double secondsPerTick;
     private final Random random = new Random();
 
-    public TelemetrySimulator(MissionRepository missionRepository, WaypointRepository waypointRepository,
+    public TelemetrySimulator(MissionRepository missionRepository,
                               TelemetryRepository telemetryRepository, MissionStrategyResolver strategyResolver,
                               IncidentService incidentService,
                               @Value("${app.simulation.tick-ms}") long tickMs,
                               @Value("${app.simulation.time-factor}") double timeFactor) {
         this.missionRepository = missionRepository;
-        this.waypointRepository = waypointRepository;
         this.telemetryRepository = telemetryRepository;
         this.strategyResolver = strategyResolver;
         this.incidentService = incidentService;
@@ -76,7 +74,8 @@ public class TelemetrySimulator {
 
     /** Avanza el drone virtual de una misión un paso de simulación. */
     void simulateStep(Mission mission) {
-        List<Waypoint> plan = waypointRepository.findByMissionIdOrderBySequenceAsc(mission.getId());
+        // MongoDB: el plan de vuelo viene embebido en la misión (ya ordenado por secuencia)
+        List<Waypoint> plan = mission.getFlightPlan();
         Optional<Drone> droneOpt = mission.getActiveAssignment().map(MissionAssignment::getDrone);
         if (plan.size() < 2 || droneOpt.isEmpty()) {
             return;

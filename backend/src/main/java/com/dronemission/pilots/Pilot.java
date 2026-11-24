@@ -1,7 +1,11 @@
 package com.dronemission.pilots;
 
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,57 +17,59 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Piloto certificado que opera los drones. */
-@Entity
-@Table(name = "pilotos")
+// MongoDB: cada objeto se guarda como un documento en la colección "pilotos"
+@Document(collection = "pilotos")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Pilot {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombre", nullable = false, length = 80)
+    @Field("nombre")
     private String firstName;
 
-    @Column(name = "apellidos", nullable = false, length = 80)
+    @Field("apellidos")
     private String lastName;
 
-    @Column(name = "documento", nullable = false, unique = true, length = 30)
+    @Indexed(unique = true)
+    @Field("documento")
     private String document;
 
-    @Column(name = "correo", nullable = false, unique = true, length = 120)
+    @Indexed(unique = true)
+    @Field("correo")
     private String email;
 
-    @Column(name = "telefono", nullable = false, length = 30)
+    @Field("telefono")
     private String phone;
 
-    @Column(name = "numero_licencia", nullable = false, unique = true, length = 40)
+    @Indexed(unique = true)
+    @Field("numero_licencia")
     private String licenseNumber;
 
-    @Column(name = "vencimiento_licencia", nullable = false)
+    @Field("vencimiento_licencia")
     private LocalDate licenseExpiresOn;
 
-    @Column(name = "horas_vuelo", nullable = false, precision = 10, scale = 2)
+    @Field("horas_vuelo")
     private BigDecimal flightHours = BigDecimal.ZERO;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
+    @Field("estado")
     private PilotStatus status = PilotStatus.DISPONIBLE;
 
-    @Column(name = "activo", nullable = false)
+    @Field("activo")
     private boolean active = true;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("usuario_id")
     private User user;
 
-    @OneToMany(mappedBy = "pilot", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("issuedOn DESC")
+    // Certificaciones EMBEBIDAS en el documento del piloto (composición)
+    @Field("certificaciones")
     private List<PilotCertification> certifications = new ArrayList<>();
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
+    @Field("creado_en")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public String getFullName() {
@@ -93,9 +99,14 @@ public class Pilot {
 
     public void replaceCertifications(List<PilotCertification> newCertifications) {
         certifications.clear();
-        newCertifications.forEach(c -> {
-            c.setPilot(this);
-            certifications.add(c);
-        });
+        // Ordenadas de la más reciente a la más antigua (antes lo hacía @OrderBy de JPA)
+        newCertifications.stream()
+                .sorted(java.util.Comparator.comparing(PilotCertification::getIssuedOn,
+                        java.util.Comparator.nullsLast(java.util.Comparator.reverseOrder())))
+                .forEach(certifications::add);
+        // Al estar embebidas no tienen secuencia propia: se numeran según su posición
+        for (int i = 0; i < certifications.size(); i++) {
+            certifications.get(i).setId((long) i + 1);
+        }
     }
 }

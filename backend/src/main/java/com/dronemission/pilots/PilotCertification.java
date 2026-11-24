@@ -1,37 +1,35 @@
 package com.dronemission.pilots;
 
-import jakarta.persistence.*;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
 
-/** Certificación obtenida por un piloto (relación 1:N con Pilot). */
-@Entity
-@Table(name = "certificaciones_piloto")
+/**
+ * Certificación obtenida por un piloto (relación 1:N con Pilot).
+ *
+ * MongoDB: se guarda EMBEBIDA dentro del documento del piloto (campo "certificaciones"),
+ * porque la certificación pertenece solo a ese piloto (composición).
+ */
 @Getter
 @Setter
 @NoArgsConstructor
 public class PilotCertification {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // Número de la certificación dentro del piloto (1, 2, 3...). Lo asigna Pilot.replaceCertifications()
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "piloto_id")
-    private Pilot pilot;
-
-    @Column(name = "nombre", nullable = false, length = 120)
+    @Field("nombre")
     private String name;
 
-    @Column(name = "entidad_emisora", nullable = false, length = 120)
+    @Field("entidad_emisora")
     private String issuer;
 
-    @Column(name = "fecha_emision", nullable = false)
+    @Field("fecha_emision")
     private LocalDate issuedOn;
 
-    @Column(name = "fecha_vencimiento")
+    @Field("fecha_vencimiento")
     private LocalDate expiresOn;
 }

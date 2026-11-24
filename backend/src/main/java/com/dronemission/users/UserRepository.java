@@ -1,11 +1,12 @@
 package com.dronemission.users;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface UserRepository extends MongoRepository<User, Long> {
 
     Optional<User> findByEmailIgnoreCase(String email);
 
@@ -21,5 +22,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findAllByOrderByIdAsc();
 
-    List<User> findByRoleNameAndActiveTrue(RoleName roleName);
+    List<User> findByActiveTrue();
+
+    // El rol es otro documento (DBRef): se filtra en Java en lugar de "role.name"
+    default List<User> findByRoleNameAndActiveTrue(RoleName roleName) {
+        return findByActiveTrue().stream().filter(u -> u.getRole().getName() == roleName).toList();
+    }
 }

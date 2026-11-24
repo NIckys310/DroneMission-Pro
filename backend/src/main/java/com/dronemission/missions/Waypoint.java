@@ -1,6 +1,6 @@
 package com.dronemission.missions;
 
-import jakarta.persistence.*;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,35 +8,26 @@ import lombok.Setter;
 /**
  * Punto del plan de vuelo programado con anticipación.
  * El drone virtual recorre los puntos en orden durante la simulación.
+ *
+ * MongoDB: NO tiene colección propia. Se guarda EMBEBIDO dentro del documento de la misión
+ * (campo "plan_vuelo"), porque un punto de ruta no existe sin su misión (composición).
  */
-@Entity
-@Table(name = "puntos_ruta")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Waypoint {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mision_id")
-    private Mission mission;
-
-    @Column(name = "orden", nullable = false)
+    @Field("orden")
     private Integer sequence;
 
-    @Column(name = "latitud", nullable = false)
+    @Field("latitud")
     private Double latitude;
 
-    @Column(name = "longitud", nullable = false)
+    @Field("longitud")
     private Double longitude;
 
-    @Column(name = "altitud_m", nullable = false)
+    @Field("altitud_m")
     private Integer altitudeM;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "accion", nullable = false, length = 20)
+    @Field("accion")
     private WaypointAction action;
 }

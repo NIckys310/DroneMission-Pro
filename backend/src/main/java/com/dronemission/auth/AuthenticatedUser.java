@@ -6,7 +6,7 @@ import java.util.Set;
 
 /**
  * Usuario autenticado de la petición actual (se guarda en el SecurityContext).
- * Es inmutable y no depende de JPA.
+ * Es inmutable y no depende de la base de datos.
  */
 public record AuthenticatedUser(Long id, String email, String fullName, RoleName role, Set<String> permissions) {
 

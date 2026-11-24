@@ -1,10 +1,11 @@
 package com.dronemission.users;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface PermissionRepository extends JpaRepository<Permission, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface PermissionRepository extends MongoRepository<Permission, Long> {
 
     List<Permission> findAllByOrderByIdAsc();
 }

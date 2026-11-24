@@ -2,7 +2,10 @@ package com.dronemission.maintenance;
 
 import com.dronemission.drones.Drone;
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,54 +15,52 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /** Mantenimiento de un drone realizado por un técnico. */
-@Entity
-@Table(name = "mantenimientos")
+// MongoDB: cada objeto se guarda como un documento en la colección "mantenimientos"
+@Document(collection = "mantenimientos")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Maintenance {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "drone_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("drone_id")
     private Drone drone;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "tecnico_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("tecnico_id")
     private User technician;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Field("tipo")
     private MaintenanceType type;
 
-    @Column(name = "fecha", nullable = false)
+    @Field("fecha")
     private LocalDate date;
 
-    @Column(name = "descripcion", nullable = false, length = 1000)
+    @Field("descripcion")
     private String description;
 
-    @Column(name = "costo", nullable = false, precision = 12, scale = 2)
+    @Field("costo")
     private BigDecimal cost = BigDecimal.ZERO;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
+    @Field("estado")
     private MaintenanceStatus status = MaintenanceStatus.PROGRAMADO;
 
-    @Column(name = "proxima_fecha")
+    @Field("proxima_fecha")
     private LocalDate nextDate;
 
-    @Column(name = "observaciones", length = 1000)
+    @Field("observaciones")
     private String observations;
 
-    @Column(name = "iniciado_en")
+    @Field("iniciado_en")
     private LocalDateTime startedAt;
 
-    @Column(name = "completado_en")
+    @Field("completado_en")
     private LocalDateTime completedAt;
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
+    @Field("creado_en")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

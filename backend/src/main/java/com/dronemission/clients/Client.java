@@ -1,7 +1,11 @@
 package com.dronemission.clients;
 
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,46 +13,46 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /** Cliente que contrata misiones. Puede tener un usuario para consultar sus misiones. */
-@Entity
-@Table(name = "clientes")
+// MongoDB: cada objeto se guarda como un documento en la colección "clientes"
+@Document(collection = "clientes")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Client {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Field("tipo")
     private ClientType type;
 
-    @Column(name = "nombre", nullable = false, length = 150)
+    @Field("nombre")
     private String name;
 
-    @Column(name = "documento", nullable = false, unique = true, length = 30)
+    @Indexed(unique = true)
+    @Field("documento")
     private String document;
 
-    @Column(name = "correo", nullable = false, length = 120)
+    @Field("correo")
     private String email;
 
-    @Column(name = "telefono", nullable = false, length = 30)
+    @Field("telefono")
     private String phone;
 
-    @Column(name = "direccion", nullable = false, length = 200)
+    @Field("direccion")
     private String address;
 
-    @Column(name = "ciudad", nullable = false, length = 80)
+    @Field("ciudad")
     private String city;
 
-    @Column(name = "activo", nullable = false)
+    @Field("activo")
     private boolean active = true;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("usuario_id")
     private User user;
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
+    @Field("creado_en")
     private LocalDateTime createdAt = LocalDateTime.now();
 }

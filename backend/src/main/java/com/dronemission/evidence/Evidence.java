@@ -2,7 +2,10 @@ package com.dronemission.evidence;
 
 import com.dronemission.missions.Mission;
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,8 +17,8 @@ import java.time.LocalDateTime;
  *  - una URL externa o ruta pública (/demo/...),
  *  - "file:<nombre>" para archivos subidos al almacenamiento local.
  */
-@Entity
-@Table(name = "evidencias")
+// MongoDB: cada objeto se guarda como un documento en la colección "evidencias"
+@Document(collection = "evidencias")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -23,35 +26,35 @@ public class Evidence {
 
     public static final String FILE_PREFIX = "file:";
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mision_id")
+    // Referencia a otro documento (DBRef). lazy: la misión solo se carga si se usa
+    @DBRef(lazy = true)
+    @Field("mision_id")
     private Mission mission;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Field("tipo")
     private EvidenceType type;
 
-    @Column(name = "nombre", nullable = false, length = 150)
+    @Field("nombre")
     private String name;
 
-    @Column(name = "url", nullable = false, length = 500)
+    @Field("url")
     private String url;
 
-    @Column(name = "descripcion", length = 1000)
+    @Field("descripcion")
     private String description;
 
-    @Column(name = "visible_cliente", nullable = false)
+    @Field("visible_cliente")
     private boolean visibleToClient = true;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "subido_por")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("subido_por")
     private User uploadedBy;
 
-    @Column(name = "fecha", nullable = false)
+    @Field("fecha")
     private LocalDateTime date = LocalDateTime.now();
 
     public boolean isStoredFile() {

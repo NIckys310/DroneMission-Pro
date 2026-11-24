@@ -1,6 +1,11 @@
 package com.dronemission.drones;
 
-import jakarta.persistence.*;
+import com.dronemission.common.persistence.BeforeCreate;
+import com.dronemission.common.persistence.BeforeUpdate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,84 +15,84 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /** Drone de la flota. Su estado lo cambian las misiones y los mantenimientos. */
-@Entity
-@Table(name = "drones")
+// MongoDB: cada objeto se guarda como un documento en la colección "drones"
+@Document(collection = "drones")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Drone {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "codigo", nullable = false, unique = true, length = 20)
+    @Indexed(unique = true)
+    @Field("codigo")
     private String code;
 
-    @Column(name = "nombre", nullable = false, length = 100)
+    @Field("nombre")
     private String name;
 
-    @Column(name = "fabricante", nullable = false, length = 80)
+    @Field("fabricante")
     private String manufacturer;
 
-    @Column(name = "modelo", nullable = false, length = 80)
+    @Field("modelo")
     private String model;
 
-    @Column(name = "numero_serie", nullable = false, unique = true, length = 60)
+    @Indexed(unique = true)
+    @Field("numero_serie")
     private String serialNumber;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Field("tipo")
     private DroneType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
+    @Field("estado")
     private DroneStatus status = DroneStatus.DISPONIBLE;
 
-    @Column(name = "capacidad_bateria_mah", nullable = false)
+    @Field("capacidad_bateria_mah")
     private Integer batteryCapacityMah;
 
     /** Porcentaje actual de batería (0-100). */
-    @Column(name = "bateria_actual", nullable = false)
+    @Field("bateria_actual")
     private Integer batteryLevel = 100;
 
-    @Column(name = "horas_vuelo", nullable = false, precision = 10, scale = 2)
+    @Field("horas_vuelo")
     private BigDecimal flightHours = BigDecimal.ZERO;
 
-    @Column(name = "velocidad_maxima_kmh", nullable = false)
+    @Field("velocidad_maxima_kmh")
     private Integer maxSpeedKmh;
 
-    @Column(name = "autonomia_minutos", nullable = false)
+    @Field("autonomia_minutos")
     private Integer autonomyMinutes;
 
-    @Column(name = "fecha_adquisicion", nullable = false)
+    @Field("fecha_adquisicion")
     private LocalDate acquiredOn;
 
-    @Column(name = "ultimo_mantenimiento")
+    @Field("ultimo_mantenimiento")
     private LocalDate lastMaintenanceOn;
 
-    @Column(name = "proximo_mantenimiento")
+    @Field("proximo_mantenimiento")
     private LocalDate nextMaintenanceOn;
 
-    @Column(name = "descripcion", length = 1000)
+    @Field("descripcion")
     private String description;
 
-    @Column(name = "activo", nullable = false)
+    @Field("activo")
     private boolean active = true;
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
+    @Field("creado_en")
     private LocalDateTime createdAt;
 
-    @Column(name = "actualizado_en", nullable = false)
+    @Field("actualizado_en")
     private LocalDateTime updatedAt;
 
-    @PrePersist
+    // Se ejecuta antes de guardar un documento nuevo (lo llama MongoLifecycleListener)
+    @BeforeCreate
     void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
 
-    @PreUpdate
+    // Se ejecuta antes de actualizar un documento existente (lo llama MongoLifecycleListener)
+    @BeforeUpdate
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }

@@ -2,7 +2,10 @@ package com.dronemission.reports;
 
 import com.dronemission.missions.Mission;
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,35 +16,35 @@ import java.time.LocalDateTime;
  * Historial de reportes generados. El PDF no se guarda: se regenera a partir
  * de los datos actuales cada vez que se descarga (evita duplicar información).
  */
-@Entity
-@Table(name = "reportes")
+// MongoDB: cada objeto se guarda como un documento en la colección "reportes"
+@Document(collection = "reportes")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Report {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 20)
+    @Field("tipo")
     private ReportType type;
 
-    @Column(name = "titulo", nullable = false, length = 200)
+    @Field("titulo")
     private String title;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mision_id")
+    // Referencia a otro documento (DBRef). lazy: la misión solo se carga si se usa
+    @DBRef(lazy = true)
+    @Field("mision_id")
     private Mission mission;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "generado_por")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("generado_por")
     private User generatedBy;
 
-    @Column(name = "generado_en", nullable = false)
+    @Field("generado_en")
     private LocalDateTime generatedAt = LocalDateTime.now();
 
-    @Column(name = "resumen", nullable = false, length = 2000)
+    @Field("resumen")
     private String summary;
 }

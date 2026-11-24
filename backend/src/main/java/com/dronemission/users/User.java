@@ -1,6 +1,12 @@
 package com.dronemission.users;
 
-import jakarta.persistence.*;
+import com.dronemission.common.persistence.BeforeCreate;
+import com.dronemission.common.persistence.BeforeUpdate;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -8,74 +14,79 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /** Usuario que inicia sesión en el sistema. Tiene exactamente un rol. */
-@Entity
-@Table(name = "usuarios")
+// MongoDB: cada objeto se guarda como un documento en la colección "usuarios"
+@Document(collection = "usuarios")
 @Getter
 @Setter
 @NoArgsConstructor
 public class User {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "nombre", nullable = false, length = 80)
+    @Field("nombre")
     private String firstName;
 
-    @Column(name = "apellidos", nullable = false, length = 80)
+    @Field("apellidos")
     private String lastName;
 
-    @Column(name = "correo", nullable = false, unique = true, length = 120)
+    @Indexed(unique = true)
+    @Field("correo")
     private String email;
 
     /** Nombre de usuario para iniciar sesión (alternativa al correo). */
-    @Column(name = "nombre_usuario", nullable = false, unique = true, length = 30)
+    @Indexed(unique = true)
+    @Field("nombre_usuario")
     private String username;
 
     // Nunca se guarda la contraseña: solo su hash BCrypt
-    @Column(name = "contrasena_hash", nullable = false, length = 100)
+    @Field("contrasena_hash")
     private String passwordHash;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "rol_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("rol_id")
     private Role role;
 
-    @Column(name = "activo", nullable = false)
+    @Field("activo")
     private boolean active = true;
 
     /** Cuenta creada por registro público que espera la aprobación de un administrador. */
-    @Column(name = "pendiente_aprobacion", nullable = false)
+    @Field("pendiente_aprobacion")
     private boolean pendingApproval = false;
 
     /** Intentos de login fallidos consecutivos (protección contra fuerza bruta). */
-    @Column(name = "intentos_fallidos", nullable = false)
+    @Field("intentos_fallidos")
     private int failedAttempts = 0;
 
-    @Column(name = "bloqueado_hasta")
+    @Field("bloqueado_hasta")
     private LocalDateTime lockedUntil;
 
-    @Column(name = "token_recuperacion", length = 64)
+    @Field("token_recuperacion")
     private String resetToken;
 
-    @Column(name = "token_expira_en")
+    @Field("token_expira_en")
     private LocalDateTime resetTokenExpiresAt;
 
-    @Column(name = "ultimo_acceso")
+    @Field("ultimo_acceso")
     private LocalDateTime lastLoginAt;
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
+    @Field("creado_en")
     private LocalDateTime createdAt;
 
-    @Column(name = "actualizado_en", nullable = false)
+    @Field("actualizado_en")
     private LocalDateTime updatedAt;
 
-    @PrePersist
+    // Se ejecuta antes de guardar un documento nuevo (lo llama MongoLifecycleListener)
+    @BeforeCreate
     void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
     }
 
-    @PreUpdate
+    // Se ejecuta antes de actualizar un documento existente (lo llama MongoLifecycleListener)
+    @BeforeUpdate
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }

@@ -1,11 +1,12 @@
 package com.dronemission.incidents;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface IncidentRepository extends JpaRepository<Incident, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface IncidentRepository extends MongoRepository<Incident, Long> {
 
     List<Incident> findAllByOrderByDateDesc();
 

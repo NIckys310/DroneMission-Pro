@@ -2,7 +2,10 @@ package com.dronemission.incidents;
 
 import com.dronemission.missions.Mission;
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,43 +13,39 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /** Incidente ocurrido durante una misión. reportedBy es null cuando lo registra el sistema. */
-@Entity
-@Table(name = "incidentes")
+// MongoDB: cada objeto se guarda como un documento en la colección "incidentes"
+@Document(collection = "incidentes")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Incident {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mision_id")
+    // Referencia a otro documento (DBRef). lazy: la misión solo se carga si se usa
+    @DBRef(lazy = true)
+    @Field("mision_id")
     private Mission mission;
 
-    @Column(name = "fecha", nullable = false)
+    @Field("fecha")
     private LocalDateTime date = LocalDateTime.now();
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo", nullable = false, length = 30)
+    @Field("tipo")
     private IncidentType type;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "severidad", nullable = false, length = 10)
+    @Field("severidad")
     private IncidentSeverity severity;
 
-    @Column(name = "descripcion", nullable = false, length = 1000)
+    @Field("descripcion")
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "registrado_por")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("registrado_por")
     private User reportedBy;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
+    @Field("estado")
     private IncidentStatus status = IncidentStatus.ABIERTO;
 
-    @Column(name = "resolucion", length = 1000)
+    @Field("resolucion")
     private String resolution;
 }

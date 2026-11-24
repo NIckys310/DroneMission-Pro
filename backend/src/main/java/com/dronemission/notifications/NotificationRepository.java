@@ -1,11 +1,12 @@
 package com.dronemission.notifications;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface NotificationRepository extends MongoRepository<Notification, Long> {
 
     List<Notification> findByUserIdOrderByDateDesc(Long userId, Pageable pageable);
 

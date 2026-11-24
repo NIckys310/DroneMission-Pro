@@ -1,7 +1,10 @@
 package com.dronemission.audit;
 
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,36 +12,37 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /** Registro de auditoría: quién hizo qué, sobre qué entidad y cuándo. */
-@Entity
-@Table(name = "auditoria")
+// MongoDB: cada objeto se guarda como un documento en la colección "auditoria"
+@Document(collection = "auditoria")
 @Getter
 @Setter
 @NoArgsConstructor
 public class AuditLog {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("usuario_id")
     private User user;
 
-    @Column(name = "correo_usuario", nullable = false, length = 120)
+    @Field("correo_usuario")
     private String userEmail;
 
-    @Column(name = "accion", nullable = false, length = 40)
+    @Field("accion")
     private String action;
 
-    @Column(name = "entidad", nullable = false, length = 40)
+    @Field("entidad")
     private String entity;
 
-    @Column(name = "entidad_id")
+    @Field("entidad_id")
     private Long entityId;
 
-    @Column(name = "descripcion", nullable = false, length = 1000)
+    @Field("descripcion")
     private String description;
 
-    @Column(name = "fecha", nullable = false)
+    @Field("fecha")
     private LocalDateTime date = LocalDateTime.now();
 }

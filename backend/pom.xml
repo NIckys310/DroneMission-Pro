@@ -22,6 +22,7 @@
         <jjwt.version>0.12.6</jjwt.version>
         <springdoc.version>2.6.0</springdoc.version>
         <openpdf.version>1.3.43</openpdf.version>
+        <flapdoodle.version>4.18.0</flapdoodle.version>
     </properties>
 
     <dependencies>
@@ -30,10 +31,10 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        <!-- Persistencia con JPA / Hibernate -->
+        <!-- Persistencia con MongoDB (Spring Data MongoDB): guarda los datos como documentos JSON -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
         </dependency>
         <!-- Seguridad: autenticación y autorización -->
         <dependency>
@@ -46,26 +47,13 @@
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
 
-        <!-- Migraciones de base de datos -->
+        <!-- MongoDB embebido (Flapdoodle): si no hay MONGODB_URI, el backend arranca su propio
+             servidor MongoDB local. Cero instalación, igual que antes con H2.
+             La primera vez descarga MongoDB 7.0 desde fastdl.mongodb.org y lo guarda en ~/.embedmongo -->
         <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
-        </dependency>
-
-        <!-- Bases de datos: H2 (sin instalación) y PostgreSQL -->
-        <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
+            <groupId>de.flapdoodle.embed</groupId>
+            <artifactId>de.flapdoodle.embed.mongo.spring3x</artifactId>
+            <version>${flapdoodle.version}</version>
         </dependency>
 
         <!-- JWT -->

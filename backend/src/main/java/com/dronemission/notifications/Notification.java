@@ -2,7 +2,10 @@ package com.dronemission.notifications;
 
 import com.dronemission.missions.Mission;
 import com.dronemission.users.User;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,34 +13,36 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /** Notificación dentro de la aplicación (campanita del frontend). */
-@Entity
-@Table(name = "notificaciones")
+// MongoDB: cada objeto se guarda como un documento en la colección "notificaciones"
+@Document(collection = "notificaciones")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Notification {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "usuario_id")
+    // Referencia a otro documento (DBRef): en Mongo se guarda {$ref, $id}
+    @DBRef
+    @Field("usuario_id")
     private User user;
 
-    @Column(name = "titulo", nullable = false, length = 150)
+    @Field("titulo")
     private String title;
 
-    @Column(name = "mensaje", nullable = false, length = 500)
+    @Field("mensaje")
     private String message;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mision_id")
+    // Referencia a otro documento (DBRef). lazy: la misión solo se carga si se usa
+    @DBRef(lazy = true)
+    @Field("mision_id")
     private Mission mission;
 
-    @Column(name = "leida", nullable = false)
+    @Field("leida")
     private boolean read = false;
 
-    @Column(name = "fecha", nullable = false)
+    @Field("fecha")
     private LocalDateTime date = LocalDateTime.now();
 }

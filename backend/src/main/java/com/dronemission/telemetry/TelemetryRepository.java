@@ -1,11 +1,12 @@
 package com.dronemission.telemetry;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface TelemetryRepository extends JpaRepository<Telemetry, Long> {
+// MongoRepository: Spring Data genera las consultas a MongoDB a partir del nombre del método
+public interface TelemetryRepository extends MongoRepository<Telemetry, Long> {
 
     List<Telemetry> findByMissionIdOrderByIdAsc(Long missionId);
 

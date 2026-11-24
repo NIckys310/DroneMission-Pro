@@ -1,7 +1,10 @@
 package com.dronemission.telemetry;
 
 import com.dronemission.missions.Mission;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -9,52 +12,53 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 /** Lectura de telemetría. En esta versión TODAS son simuladas (simulated = true). */
-@Entity
-@Table(name = "telemetria")
+// MongoDB: cada objeto se guarda como un documento en la colección "telemetria"
+@Document(collection = "telemetria")
 @Getter
 @Setter
 @NoArgsConstructor
 public class Telemetry {
 
+    // _id numérico: lo asigna SequenceGeneratorService (como el autoincremento de SQL)
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "mision_id")
+    // Referencia a otro documento (DBRef). lazy: la misión solo se carga si se usa
+    @DBRef(lazy = true)
+    @Field("mision_id")
     private Mission mission;
 
-    @Column(name = "registrado_en", nullable = false)
+    @Field("registrado_en")
     private LocalDateTime recordedAt = LocalDateTime.now();
 
-    @Column(name = "latitud", nullable = false)
+    @Field("latitud")
     private Double latitude;
 
-    @Column(name = "longitud", nullable = false)
+    @Field("longitud")
     private Double longitude;
 
-    @Column(name = "altitud_m", nullable = false)
+    @Field("altitud_m")
     private Double altitudeM;
 
-    @Column(name = "velocidad_kmh", nullable = false)
+    @Field("velocidad_kmh")
     private Double speedKmh;
 
-    @Column(name = "bateria", nullable = false)
+    @Field("bateria")
     private Integer battery;
 
-    @Column(name = "distancia_m", nullable = false)
+    @Field("distancia_m")
     private Double distanceM;
 
-    @Column(name = "temperatura_c", nullable = false)
+    @Field("temperatura_c")
     private Double temperatureC;
 
-    @Column(name = "tiempo_vuelo_s", nullable = false)
+    @Field("tiempo_vuelo_s")
     private Integer flightTimeS;
 
     /** Índice del próximo punto del plan de vuelo al que se dirige el drone. */
-    @Column(name = "punto_ruta_actual", nullable = false)
+    @Field("punto_ruta_actual")
     private Integer currentWaypoint;
 
-    @Column(name = "simulado", nullable = false)
+    @Field("simulado")
     private boolean simulated = true;
 }
